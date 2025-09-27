@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_51NGGjoAEYgsyj7Asp9IwsRqhifELFpEDxyNxke1YHTYsaRN54XLcq2L0zfbvYHADEGeKgFHbQSL8O3Cf5uAsIC3e00iGRnNG2o');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const axios = require('axios');
 
 const app = express();
@@ -80,7 +80,7 @@ app.post('/analyze-card', async (req, res) => {
     }
 
     // Claude API configuration
-    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || 'YOUR_API_KEY_HERE';
+    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
     const response = await axios.post(
       'https://api.anthropic.com/v1/messages',
