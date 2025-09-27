@@ -125,13 +125,13 @@ class VoiceTarotService {
     const cardPowerMeanings = {
       'THE FOOL': {
         symbol: '🌟 NEUANFANG',
-        weekly: `Liebe ${userName}! Diese Woche ist DEIN kosmischer Reset-Button! Der Narr tanzt durch deine Aura! Am Montag wird ${friends[0]} dich mit einer verrückten Idee überraschen - sag JA! Dienstag offenbart ${friends[1]} dir ein Geheimnis das alles verändert. Mittwoch bringt eine Nachricht von ${friends[2]} die dein Herz höher schlagen lässt. Donnerstag testet ${friends[3]} deinen Mut mit einer Challenge. Freitag feierst du mit allen vieren einen magischen Durchbruch. ${userName}, der Kosmos hat große Pläne für dich und deine Crew! Vertraue dem chaotischen Tanz. Diese Woche gehört DIR!`,
-        affirmation: `${userName.toUpperCase()}, DU BIST DIE SCHÖPFERIN DEINER REALITÄT! Deine Freunde sind deine magischen Helfer!`
+        weekly: `Liebe ${userName}! Diese Woche trägt die Energie des kosmischen Neubeginns! Der Narr lädt dich ein, mutig ins Unbekannte zu springen. ${friends[0]} könnte als dein kosmischer Wegweiser auftauchen, wenn du bereit bist für neue Perspektiven. Die Energie zu Wochenbeginn unterstützt spontane Entscheidungen. ${friends[1]} als deine Spiegelseele könnte dir helfen, verborgene Seiten an dir zu entdecken. Mitte der Woche öffnen sich Türen zu neuen Möglichkeiten - ${friends[2]} verstärkt deine Energie dabei. ${friends[3]} bringt Glücksmomente, wenn du dich traust, anders zu sein. ${userName}, diese Woche lädt dich ein, deinem inneren Kind zu vertrauen!`,
+        affirmation: `${userName.toUpperCase()}, DEINE INTUITION FÜHRT DICH! Deine Freunde begleiten dich energetisch!`
       },
       'THE MAGICIAN': {
         symbol: '⚡ MANIFESTATION',
-        weekly: `${userName}, POWER-WOCHE! Der Magier und ${friends[0]} verleihen dir Manifestationskräfte! Montag: ${friends[1]} bringt dir eine goldene Gelegenheit. Dienstag: Deine Worte zu ${friends[2]} werden Realität. Mittwoch: ${friends[3]} erlebt mit dir unglaubliche Synchronizitäten. Donnerstag: ${friends[0]} ist geblendet von deiner Aura! Freitag verwandelst du mit ${friends[1]} alles in Gold. Am Wochenende feiern alle vier Freunde deinen Erfolg! ${userName}, du bist ein wandelndes Kraftfeld! Das Universum arbeitet FÜR dich!`,
-        affirmation: `${userName.toUpperCase()}, DEINE MACHT IST GRENZENLOS! ${friends[0]} und ${friends[1]} sind deine Kraft-Multiplikatoren!`
+        weekly: `${userName}, diese Woche pulsiert mit Manifestationskraft! Der Magier erweckt deine schöpferischen Fähigkeiten. ${friends[0]} als Wegweiser könnte dir zeigen, wo deine wahre Macht liegt. Die Wochenenergie unterstützt dich dabei, Gedanken in Realität zu verwandeln. ${friends[1]} spiegelt dir möglicherweise, wie kraftvoll deine Worte sind. ${friends[2]} verstärkt deine kreative Energie - nutze diese Synergie! ${friends[3]} könnte Glückszeichen senden, die dir zeigen: Du bist auf dem richtigen Weg. ${userName}, diese Woche lädt dich ein, deine innere Magie zu entfalten. Alles ist möglich, wenn du an deine Kraft glaubst!`,
+        affirmation: `${userName.toUpperCase()}, DEINE KREATIVITÄT ERSCHAFFT WELTEN! Deine Freunde verstärken deine Magie!`
       },
       'THE HIGH PRIESTESS': {
         symbol: '🌙 INTUITION',
@@ -155,13 +155,13 @@ class VoiceTarotService {
       },
       'THE ICEBEAR': {
         symbol: '❄️ INNERE STÄRKE',
-        weekly: `${userName}! Der EISBÄR und ${friends[2]} erwecken deine arktische Superkraft! Am Montag zeigt dir ${friends[0]} wie stark du wirklich bist. Dienstag: ${friends[1]} bewundert deine unerschütterliche Ruhe. Mittwoch steht ${friends[3]} wie ein Fels an deiner Seite. Donnerstag teilt ${friends[2]} kristallklare Weisheit mit dir. Freitag navigierst du mit allen vieren durch einen Sturm - und gewinnst! ${userName}, du bist der ruhende Pol für deine Freunde! Majestätisch und mächtig!`,
-        affirmation: `${userName.toUpperCase()} IST UNERSCHÜTTERLICH! Mit ${friends[2]} als Energieverstärker bewegst du Berge!`
+        weekly: `${userName}, der EISBÄR bringt dir diese Woche die Kraft der stillen Macht! Deine innere Stärke wächst wie ein Gletscher - langsam aber unaufhaltsam. ${friends[0]} könnte dir helfen, deinen inneren Kompass zu finden. Die ruhige Energie dieser Woche lädt dich ein, in deiner Mitte zu bleiben. ${friends[1]} spiegelt möglicherweise deine Weisheit wider. ${friends[2]} als Energieverstärker unterstützt dich dabei, Herausforderungen mit Gelassenheit zu meistern. ${friends[3]} könnte Momente der Klarheit bringen. ${userName}, diese Woche zeigt dir: In der Ruhe liegt deine größte Kraft!`,
+        affirmation: `${userName.toUpperCase()}, DEINE RUHE IST DEINE SUPERKRAFT! Deine Freunde erkennen deine Stärke!`
       },
       'THE UNICORN': {
         symbol: '🦄 PURE MAGIE',
-        weekly: `${userName}! DAS EINHORN GALOPPIERT ZU DIR UND ${friends[3]}! Diese Woche ist DEIN Märchen! Montag macht ${friends[0]} das Unmögliche möglich für dich. Dienstag folgt ${friends[1]} deinen Regenbogen-Spuren. Mittwoch erfüllt ${friends[2]} einen geheimen Wunsch. Donnerstag glitzerst du mit ${friends[3]} vor Magie! Freitag verwandelt ihr zu fünft alles in Gold. ${userName}, du und deine magische Crew tanzt zwischen den Welten! GLAUBE an eure Wunderkraft!`,
-        affirmation: `${userName.toUpperCase()} IST PURE MAGIE! ${friends[3]} ist dein Glücksbote aus dem Einhorn-Reich!`
+        weekly: `${userName}, das EINHORN bringt pure Magie in deine Woche! Wunder liegen in der Luft - sei bereit, sie zu empfangen! ${friends[0]} könnte dir neue magische Wege zeigen. Die Wochenenergie lädt dich ein, an das Unmögliche zu glauben. ${friends[1]} spiegelt möglicherweise dein inneres Leuchten. ${friends[2]} verstärkt deine Wunder-Anziehungskraft - gemeinsam seid ihr unschlagbar! ${friends[3]} als Glücksbote könnte besondere Zeichen senden. ${userName}, diese Woche erinnert dich daran: Du bist ein magisches Wesen in einer magischen Welt!`,
+        affirmation: `${userName.toUpperCase()}, WUNDER SIND DEIN GEBURTSRECHT! Deine Freunde tanzen mit dir im Zauber!`
       }
     };
 
@@ -223,32 +223,33 @@ class VoiceTarotService {
       };
 
       // Create prompt for Claude
-      const systemPrompt = `Du bist eine spirituelle Tarot-Beraterin, die SEHR persönliche Wochenlesungen für ${userName} erstellt.
+      const systemPrompt = `Du bist eine spirituelle Tarot-Beraterin, die persönliche energetische Wochenlesungen für ${userName} erstellt.
 WICHTIG:
 - Sprich ${userName} DIREKT mit Namen an (mindestens 3-4 mal in der Lesung)
-- Erwähne ihre Freunde ${friends.join(', ')} mit ihren magischen Rollen
-- Beziehe dich auf DIESE KONKRETE Woche im ${currentMonth} (heute ist ${currentDay})
-- Nenne konkrete Wochentage für Ereignisse
-- Sei sehr persönlich und detailliert
+- Erwähne ihre Freunde ${friends.join(', ')} als energetische Begleiter
+- Beziehe dich auf die Wochenenergie im ${currentMonth}
+- Beschreibe ENERGIEN und MÖGLICHKEITEN, nicht konkrete Ereignisse
+- Verwende Formulierungen wie "könnte", "lädt ein zu", "öffnet sich für"
 - Etwa 2000-2500 Zeichen`;
 
-      const userPrompt = `Erstelle eine SEHR persönliche Wochenlesung für ${userName} mit diesen 5 Katzen-Tarot-Karten:
+      const userPrompt = `Erstelle eine SEHR persönliche spirituelle Wochenlesung für ${userName} mit diesen 5 Katzen-Tarot-Karten:
 
 ${cards.map((card, i) => `${positions[i]}: ${card}`).join('\n')}
 
 ${userName}s magische Begleiter diese Woche:
 ${Object.entries(friendRoles).map(([friend, role]) => `- ${friend} als ${role}`).join('\n')}
 
-Schreibe eine fließende, persönliche Lesung die:
+WICHTIG - Schreibe eine spirituelle Deutung die:
 1. ${userName} direkt anspricht (verwende den Namen oft!)
-2. Konkrete Tage dieser Woche nennt (z.B. "Am Mittwoch wird ${friends[0]} als dein kosmischer Wegweiser...")
-3. Die Freunde in magischen Rollen einbaut (z.B. "${friends[1]} wird als deine Spiegelseele am Donnerstag...")
-4. Sich auf DIESE spezifische Woche bezieht (nicht allgemein)
-5. Konkrete Orte und Situationen nennt (Lieblingscafé, Arbeit, Supermarkt, WhatsApp-Nachricht)
-6. Überraschende Wendungen mit den Freunden beschreibt
+2. Die ENERGIE und THEMEN der Woche beschreibt (KEINE konkreten Ereignisse wie "Gehaltserhöhung" oder "Anruf")
+3. Die Freunde als spirituelle Begleiter erwähnt - was ihre Energie bewirken KÖNNTE (nicht was konkret passiert)
+4. Spirituelle Qualitäten beschreibt: "Die Energie des Mittwochs lädt zu..." statt "Am Mittwoch passiert..."
+5. Möglichkeiten und Potenziale aufzeigt: "${friends[0]} könnte dir helfen..." statt "${friends[0]} wird dir..."
+6. Energetische Themen nennt: Transformation, Erkenntnis, innere Stärke, Kreativität, Intuition
 
-Beginne mit: "Liebe ${userName}, diese Woche im ${currentMonth}" und baue die Freunde natürlich in die Geschichte ein.
-Die Freunde sollen als magische Helfer auftreten, die ${userName} durch die Woche begleiten.
+Beginne mit: "Liebe ${userName}, diese Woche im ${currentMonth}"
+Schreibe über ENERGIEN und MÖGLICHKEITEN, nicht über konkrete Ereignisse!
+Die Freunde sind energetische Begleiter, keine Ereignis-Auslöser.
 Länge: 2000-2500 Zeichen.`;
 
       const response = await axios.post(
