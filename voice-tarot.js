@@ -24,15 +24,16 @@ class VoiceTarotService {
       console.log('Generating voice with RunPod API...');
       console.log('Endpoint:', this.baseUrl);
 
-      // Active RunPod implementation
+      // Active RunPod implementation with correct endpoint
       const response = await axios.post(
-        `${this.baseUrl}/run`,
+        `${this.baseUrl}/runsync`,
         {
           input: {
-            prompt: prompt,
-            language: 'de',
-            voice: 'female_1', // German female voice
-            speed: 0.9  // Slightly slower for mystical effect
+            text: prompt,
+            model: "tts-1",  // OpenAI compatible
+            voice: "nova",   // Available voice
+            response_format: "mp3",
+            speed: 0.9
           }
         },
         {
@@ -46,30 +47,56 @@ class VoiceTarotService {
 
       console.log('RunPod response:', response.data);
 
-      // RunPod returns job ID, we need to poll for result
-      if (response.data && response.data.id) {
-        // Wait a moment for processing
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Get status
-        const statusResponse = await axios.get(
-          `${this.baseUrl}/status/${response.data.id}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${RUNPOD_API_KEY}`
-            }
+      // Check if we got a direct response from runsync
+      if (response.data) {
+        // For runsync, the output is directly in the response
+        if (response.data.output) {
+          // If output contains base64 audio
+          if (response.data.output.audio_base64) {
+            // Convert base64 to data URL for playback
+            const audioUrl = `data:audio/mp3;base64,${response.data.output.audio_base64}`;
+            return {
+              audioUrl: audioUrl,
+              text: prompt,
+              duration: response.data.output.duration || 30,
+              jobId: response.data.id || 'sync-job'
+            };
           }
-        );
+          // If output contains audio URL
+          else if (response.data.output.audio_url) {
+            return {
+              audioUrl: response.data.output.audio_url,
+              text: prompt,
+              duration: response.data.output.duration || 30,
+              jobId: response.data.id || 'sync-job'
+            };
+          }
+        }
 
-        console.log('Status response:', statusResponse.data);
+        // If response has different structure (job ID for async)
+        if (response.data.id && !response.data.output) {
+          // Wait and poll for result
+          await new Promise(resolve => setTimeout(resolve, 2000));
 
-        if (statusResponse.data && statusResponse.data.output) {
-          return {
-            audioUrl: statusResponse.data.output.audio_url || null,
-            text: prompt,
-            duration: statusResponse.data.output.duration || 30,
-            jobId: response.data.id
-          };
+          const statusResponse = await axios.get(
+            `${this.baseUrl}/status/${response.data.id}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${RUNPOD_API_KEY}`
+              }
+            }
+          );
+
+          console.log('Status response:', statusResponse.data);
+
+          if (statusResponse.data && statusResponse.data.output) {
+            return {
+              audioUrl: statusResponse.data.output.audio_url || null,
+              text: prompt,
+              duration: statusResponse.data.output.duration || 30,
+              jobId: response.data.id
+            };
+          }
         }
       }
 
