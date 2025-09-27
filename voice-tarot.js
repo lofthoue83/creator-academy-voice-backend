@@ -1,11 +1,13 @@
 const { fal } = require('@fal-ai/client');
 
-// Configure fal.ai API key
-const FAL_API_KEY = process.env.FAL_API_KEY || process.env.RUNPOD_API_KEY;
+// Configure fal.ai API key - only use FAL_API_KEY, not RUNPOD
+const FAL_API_KEY = process.env.FAL_API_KEY;
 if (FAL_API_KEY) {
   fal.config({
     credentials: FAL_API_KEY
   });
+} else {
+  console.error('FAL_API_KEY is not set!');
 }
 
 class VoiceTarotService {
