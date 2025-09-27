@@ -106,53 +106,75 @@ class VoiceTarotService {
    * Create mystical tarot reading prompt
    */
   createTarotPrompt(cards, spreadType) {
-    const cardDescriptions = {
-      'THE FOOL': 'Der Narr zeigt neue Anfänge und unbegrenztes Potenzial. Ein frischer Wind weht durch dein Leben. Du stehst am Anfang einer aufregenden Reise.',
-      'THE MAGICIAN': 'Der Magier offenbart deine innere Kraft. Du besitzt alle Werkzeuge und Fähigkeiten, die du brauchst. Jetzt ist die Zeit, deine Träume zu manifestieren.',
-      'THE HIGH PRIESTESS': 'Die Hohepriesterin flüstert dir zu: Vertraue deiner Intuition. Tief in dir liegt die Antwort. Die Geheimnisse des Universums öffnen sich dir.',
-      'THE EMPRESS': 'Die Kaiserin segnet dich mit Fülle und Kreativität. Fruchtbarkeit in allen Lebensbereichen. Nähre deine Projekte mit Liebe.',
-      'THE EMPEROR': 'Der Kaiser bringt Struktur und Autorität. Übernimm die Führung in deinem Leben. Disziplin wird dich zum Erfolg führen.',
-      'THE LOVERS': 'Die Liebenden sprechen von tiefer Verbindung. Eine wichtige Entscheidung des Herzens steht bevor. Harmonie zwischen Gegensätzen.',
-      'THE ICEBEAR': 'Der Eisbär symbolisiert Stärke in der Stille. In der Einsamkeit findest du deine wahre Kraft. Zeit für tiefe innere Reflexion.',
-      'THE UNICORN': 'Das Einhorn bringt pure Magie in dein Leben. Reinheit und Wunder umgeben dich. Folge deinen wildesten Träumen.',
-      // Add more card meanings...
+    // Wochenhoroskop-Style mit Power-Affirmationen
+    const weekDays = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
+
+    const cardPowerMeanings = {
+      'THE FOOL': {
+        symbol: '🌟 NEUANFANG',
+        weekly: 'Diese Woche ist dein kosmischer Reset-Button! Der Narr tanzt durch deine Aura und flüstert: Spring ins Unbekannte! Montag startet mit einem Energieschub der dich in neue Dimensionen katapultiert. Dienstag offenbart verborgene Talente. Mittwoch bringt überraschende Begegnungen. Donnerstag testet deinen Mut. Freitag belohnt deine Spontanität mit Magie. Am Wochenende manifestiert sich dein wahres Potenzial. Der Kosmos hat große Pläne mit dir! Vertraue dem chaotischen Tanz des Universums. Du bist bereit für diese wilde Reise. Lass alle Zweifel los und FLIEG!',
+        affirmation: 'ICH BIN DER SCHÖPFER MEINER REALITÄT! Jeder Tag ist ein neues Abenteuer!'
+      },
+      'THE MAGICIAN': {
+        symbol: '⚡ MANIFESTATION',
+        weekly: 'POWER-WOCHE! Der Magier verleiht dir übermenschliche Manifestationskräfte! Montag: Deine Gedanken werden zu Gold. Dienstag: Jedes Wort hat magische Wirkung. Mittwoch: Synchronizitäten explodieren um dich herum. Donnerstag: Deine Aura leuchtet so hell dass andere geblendet werden. Freitag: Alles was du berührst verwandelt sich. Wochenende: Die Realität biegt sich deinem Willen. Du bist ein wandelndes Kraftfeld! Nutze diese Energie um deine kühnsten Träume zu verwirklichen. Das Universum ist dein Spielplatz!',
+        affirmation: 'MEINE MACHT IST GRENZENLOS! Ich erschaffe Wunder mit jedem Atemzug!'
+      },
+      'THE HIGH PRIESTESS': {
+        symbol: '🌙 INTUITION',
+        weekly: 'Die Hohepriesterin öffnet dein drittes Auge WEIT! Diese Woche wirst du zum kosmischen Empfänger. Montag: Träume werden zu Prophezeiungen. Dienstag: Du spürst was andere denken. Mittwoch: Geheimnisse enthüllen sich. Donnerstag: Deine Intuition erreicht Superhelden-Level. Freitag: Die Akasha-Chronik öffnet sich. Wochenende: Du wirst zum Orakel. Vertraue JEDEM Bauchgefühl - es ist die Stimme des Universums! Deine psychischen Kräfte explodieren. Nutze sie weise!',
+        affirmation: 'ICH HÖRE DIE FLÜSTERN DES KOSMOS! Meine Intuition führt mich zu Wundern!'
+      },
+      'THE EMPRESS': {
+        symbol: '👑 FÜLLE',
+        weekly: 'ABUNDANCE OVERFLOW! Die Kaiserin duscht dich mit kosmischem Reichtum! Montag regnet es Segnungen. Dienstag: Kreativität explodiert wie ein Vulkan. Mittwoch: Liebe strömt aus allen Richtungen. Donnerstag: Deine Projekte blühen auf. Freitag: Unerwartete Geschenke vom Universum. Wochenende: Du badest in Luxus und Freude. Diese Woche bist du ein Magnet für alles Gute! Öffne deine Arme weit und empfange die Fülle die dir zusteht!',
+        affirmation: 'ICH BIN EIN MAGNET FÜR WUNDER! Fülle fließt endlos in mein Leben!'
+      },
+      'THE EMPEROR': {
+        symbol: '⚔️ MACHT',
+        weekly: 'Der Kaiser krönt dich zum HERRSCHER deiner Realität! Diese Woche übernimmst du das Kommando! Montag: Du zertrümmerst alte Grenzen. Dienstag: Deine Autorität ist unbestreitbar. Mittwoch: Erfolg folgt jedem deiner Schritte. Donnerstag: Du baust dein Imperium. Freitag: Respekt und Anerkennung überall. Wochenende: Du thronst über deinen Errungenschaften. Niemand kann dich stoppen! Du bist der CEO deines Lebens!',
+        affirmation: 'ICH BIN DER MEISTER MEINES SCHICKSALS! Meine Macht erschafft Welten!'
+      },
+      'THE LOVERS': {
+        symbol: '💕 VERBINDUNG',
+        weekly: 'Die Liebenden zünden ein FEUERWERK der Verbindungen! Diese Woche pulsiert von Liebe! Montag: Seelenverwandte kreuzen deinen Weg. Dienstag: Dein Herz öffnet sich weit. Mittwoch: Romantik liegt in der Luft. Donnerstag: Tiefe Verbindungen entstehen. Freitag: Leidenschaft entflammt. Wochenende: Harmonie in allen Beziehungen. Du strahlst so viel Liebe aus dass das ganze Universum darauf antwortet!',
+        affirmation: 'ICH BIN LIEBE IN AKTION! Mein Herz zieht Wunder an!'
+      },
+      'THE ICEBEAR': {
+        symbol: '❄️ INNERE STÄRKE',
+        weekly: 'Der EISBÄR erweckt deine arktische Superkraft! Diese Woche wirst du UNBESIEGBAR! Montag: Deine innere Stärke bricht wie ein Gletscher hervor. Dienstag: Nichts kann deine Ruhe erschüttern. Mittwoch: Du stehst fest wie ein Berg aus Eis. Donnerstag: Deine Weisheit ist kristallklar. Freitag: Du navigierst durch Stürme mit Leichtigkeit. Wochenende: Deine Kraft inspiriert andere. Du bist der ruhende Pol im Chaos - majestätisch, mächtig, unaufhaltbar! Die Kälte macht dich nur stärker!',
+        affirmation: 'ICH BIN UNERSCHÜTTERLICH! Meine Stärke bewegt Berge!'
+      },
+      'THE UNICORN': {
+        symbol: '🦄 PURE MAGIE',
+        weekly: 'DAS EINHORN GALOPPIERT IN DEIN LEBEN! PURE MAGIE EXPLODIERT! Diese Woche lebst du in einem Märchen! Montag: Unmögliches wird möglich. Dienstag: Regenbogen folgen deinen Schritten. Mittwoch: Wünsche erfüllen sich spontan. Donnerstag: Du glitzerst vor magischer Energie. Freitag: Einhornstaub verwandelt alles in Gold. Wochenende: Du tanzt zwischen den Dimensionen. Glaube an JEDES Wunder - sie warten nur darauf von dir entdeckt zu werden!',
+        affirmation: 'ICH BIN PURE MAGIE! Wunder sind mein Geburtsrecht!'
+      }
     };
 
-    let reading = `BOOM! Willkommen zur ultimativen Tarot-Power-Lesung! `;
-    reading += `${cards.length} magische Karten wurden gezogen - das wird EPISCH! `;
-    reading += `Bereit für die kosmische Wahrheit? Let's GO!\n\n`;
+    // Erstelle Wochenhoroskop basierend auf der ersten/Hauptkarte
+    const mainCard = cards[0].toUpperCase();
+    const cardInfo = cardPowerMeanings[mainCard] || {
+      symbol: '✨ MYSTERIUM',
+      weekly: `Diese Woche hält ${mainCard} unglaubliche Überraschungen für dich bereit! Jeden Tag entfaltet sich neue Magie. Montag beginnt mit einem Paukenschlag kosmischer Energie. Dienstag bis Donnerstag bauen sich kraftvolle Energiewellen auf. Freitag bringt den Durchbruch den du brauchst. Das Wochenende krönt alles mit purem Glück und Erfüllung. Das Universum hat große Pläne mit dir! Vertraue dem Prozess und lass dich von der Magie dieser Karte leiten. Du bist bereit für diese transformative Woche!`,
+      affirmation: 'ICH BIN BEREIT FÜR WUNDER! Das Universum arbeitet FÜR mich!'
+    };
 
-    // Three-card spread
-    if (spreadType === 'three-card' && cards.length >= 3) {
-      reading += `ERSTE KARTE - Deine Vergangenheit: BAM! ${cards[0]}!\n`;
-      reading += `${cardDescriptions[cards[0]] || 'Krasse Karte! Die hat echt Power!'}`;
+    let reading = `🌟 DEIN MAGISCHES WOCHENHOROSKOP 🌟\n\n`;
+    reading += `${cardInfo.symbol} - ${mainCard} ENERGIE!\n\n`;
+    reading += `${cardInfo.weekly}\n\n`;
+    reading += `⚡ POWER-AFFIRMATION DER WOCHE:\n`;
+    reading += `${cardInfo.affirmation}\n\n`;
+
+    if (cards.length > 1) {
+      reading += `BONUS-ENERGIEN: `;
+      for (let i = 1; i < Math.min(cards.length, 3); i++) {
+        reading += `${cards[i]} verstärkt deine Power! `;
+      }
       reading += `\n\n`;
-
-      reading += `ZWEITE KARTE - Deine Gegenwart: ZACK! ${cards[1]}!\n`;
-      reading += `${cardDescriptions[cards[1]] || 'WOW! Das ist deine aktuelle Superkraft!'}`;
-      reading += `\n\n`;
-
-      reading += `DRITTE KARTE - Deine Zukunft: BOOM SHAKALAKA! ${cards[2]}!\n`;
-      reading += `${cardDescriptions[cards[2]] || 'Die Zukunft wird LEGENDARY! Mach dich bereit!'}`;
     }
 
-    // Celtic Cross
-    else if (spreadType === 'celtic-cross' && cards.length >= 5) {
-      reading += `Das keltische Kreuz wurde für dich gelegt. Eine uralte Formation der Weisheit.\n\n`;
-      reading += `Im Herzen deiner Situation liegt ${cards[0]}. ... ${cardDescriptions[cards[0]] || 'Das Zentrum deines Seins.'}\n\n`;
-      reading += `Gekreuzt wird sie von ${cards[1]}! ... ${cardDescriptions[cards[1]] || 'Die Herausforderung, die dich prüft.'}\n\n`;
-      reading += `Über dir, wie ein Stern am Himmel, schwebt ${cards[2]}. ${cardDescriptions[cards[2]] || 'Dein bewusstes Streben.'}\n\n`;
-      reading += `Tief in deinem Unterbewusstsein ruht ${cards[3]}. ${cardDescriptions[cards[3]] || 'Die verborgene Kraft in dir.'}\n\n`;
-      reading += `Und die Zukunft... ... Sie zeigt ${cards[4]}. ${cardDescriptions[cards[4]] || 'Das mögliche Ergebnis deiner Reise.'}\n`;
-    }
-
-    // Single card
-    else {
-      reading += `Eine einzelne Karte wurde gezogen... ${cards[0]}.\n\n`;
-      reading += `${cardDescriptions[cards[0]] || 'Diese eine Karte trägt die gesamte Botschaft des Universums für dich. Höre genau hin.'}`;
-    }
-
-    reading += `\n\nDAS WAR'S! Die kosmischen Kräfte haben gesprochen! Du bist jetzt UNSTOPPABLE! GO GET 'EM, CHAMPION!`;
+    reading += `REMEMBER: Du bist ein MAGNET für Wunder! Diese Woche gehört DIR! 🚀✨`;
 
     return reading;
   }
