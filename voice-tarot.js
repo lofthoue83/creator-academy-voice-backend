@@ -38,11 +38,11 @@ class VoiceTarotService {
         input: {
           text: textToSpeak,
           voice_setting: {
-            voice_id: voiceStyle === 'mystical' ? 'Wise_Woman' : 'Deep_Voice_Man',
-            speed: voiceStyle === 'mystical' ? 0.8 : 1.0,  // Noch langsamer für mystisch
+            voice_id: voiceStyle === 'mystical' ? 'Deep_Voice_Man' : 'Wise_Woman',  // Männliche tiefe Stimme für mystisch
+            speed: voiceStyle === 'mystical' ? 1.1 : 1.2,  // Schneller, dynamischer
             vol: 1.0,
-            pitch: voiceStyle === 'mystical' ? -3 : 0,    // Tiefere Stimme
-            emotion: voiceStyle === 'mystical' ? 'neutral' : 'happy'  // Emotionen: happy, sad, angry, fearful, disgusted, surprised, neutral
+            pitch: voiceStyle === 'mystical' ? 2 : 0,      // Etwas höher für Comic-Style
+            emotion: voiceStyle === 'mystical' ? 'surprised' : 'happy'  // Überrascht/aufgeregt für Comic-Feeling
           },
           audio_setting: {
             sample_rate: 32000,    // Must be integer from allowed values
@@ -118,22 +118,22 @@ class VoiceTarotService {
       // Add more card meanings...
     };
 
-    let reading = `... Willkommen, suchende Seele, zu deiner mystischen Tarot-Lesung. `;
-    reading += `Die Karten haben gesprochen. ${cards.length} heilige Symbole wurden für dich enthüllt. `;
-    reading += `Atme tief ein... ... und aus... ... Öffne dein Herz für die Botschaften des Universums.\n\n`;
+    let reading = `BOOM! Willkommen zur ultimativen Tarot-Power-Lesung! `;
+    reading += `${cards.length} magische Karten wurden gezogen - das wird EPISCH! `;
+    reading += `Bereit für die kosmische Wahrheit? Let's GO!\n\n`;
 
     // Three-card spread
     if (spreadType === 'three-card' && cards.length >= 3) {
-      reading += `Die erste Karte liegt im Schatten deiner Vergangenheit... ... ${cards[0]}.\n`;
-      reading += `${cardDescriptions[cards[0]] || 'Diese Karte birgt uralte Geheimnisse, die nur du entschlüsseln kannst.'}`;
-      reading += `\n\n... ... ...\n\n`;
+      reading += `ERSTE KARTE - Deine Vergangenheit: BAM! ${cards[0]}!\n`;
+      reading += `${cardDescriptions[cards[0]] || 'Krasse Karte! Die hat echt Power!'}`;
+      reading += `\n\n`;
 
-      reading += `Die zweite Karte pulsiert mit der Energie deiner Gegenwart... ${cards[1]}.\n`;
-      reading += `${cardDescriptions[cards[1]] || 'Der gegenwärtige Moment vibriert mit unendlichen Möglichkeiten. Spürst du es?'}`;
-      reading += `\n\n... ... ...\n\n`;
+      reading += `ZWEITE KARTE - Deine Gegenwart: ZACK! ${cards[1]}!\n`;
+      reading += `${cardDescriptions[cards[1]] || 'WOW! Das ist deine aktuelle Superkraft!'}`;
+      reading += `\n\n`;
 
-      reading += `Die dritte Karte... Sie enthüllt den Schleier deiner Zukunft... ${cards[2]}.\n`;
-      reading += `${cardDescriptions[cards[2]] || 'Die Zukunft formt sich durch deine heutigen Entscheidungen. Das Schicksal liegt in deinen Händen.'}`;
+      reading += `DRITTE KARTE - Deine Zukunft: BOOM SHAKALAKA! ${cards[2]}!\n`;
+      reading += `${cardDescriptions[cards[2]] || 'Die Zukunft wird LEGENDARY! Mach dich bereit!'}`;
     }
 
     // Celtic Cross
@@ -152,7 +152,7 @@ class VoiceTarotService {
       reading += `${cardDescriptions[cards[0]] || 'Diese eine Karte trägt die gesamte Botschaft des Universums für dich. Höre genau hin.'}`;
     }
 
-    reading += `\n\n... ... Die Karten haben gesprochen. Möge ihre Weisheit dich auf deinem Pfad erleuchten. Vertraue dem Prozess. ... Namaste, geliebte Seele.`;
+    reading += `\n\nDAS WAR'S! Die kosmischen Kräfte haben gesprochen! Du bist jetzt UNSTOPPABLE! GO GET 'EM, CHAMPION!`;
 
     return reading;
   }
