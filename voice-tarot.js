@@ -44,10 +44,10 @@ class VoiceTarotService {
             pitch: voiceStyle === 'mystical' ? -2 : 0
           },
           audio_setting: {
-            sample_rate: "32000",  // Must be string
-            bitrate: "128000",     // Must be string
+            sample_rate: 32000,    // Must be integer from allowed values
+            bitrate: 128000,       // Must be integer from allowed values
             format: "mp3",
-            channel: "2"           // Must be string
+            channel: 2             // Must be integer (1 or 2)
           },
           output_format: "url"     // Get URL instead of hex
         },
@@ -61,22 +61,13 @@ class VoiceTarotService {
 
       console.log('fal.ai response received');
 
-      // Check if we got audio
-      if (result && result.audio_url) {
+      // Check if we got audio - fal.ai returns nested structure
+      if (result && result.data && result.data.audio && result.data.audio.url) {
         return {
-          audioUrl: result.audio_url,
+          audioUrl: result.data.audio.url,
           text: prompt,
-          duration: result.duration || 30,
-          jobId: result.request_id || 'fal-job'
-        };
-      } else if (result && result.audio) {
-        // If audio is returned as base64
-        const audioUrl = `data:audio/mp3;base64,${result.audio}`;
-        return {
-          audioUrl: audioUrl,
-          text: prompt,
-          duration: result.duration || 30,
-          jobId: result.request_id || 'fal-job'
+          duration: result.data.duration_ms ? result.data.duration_ms / 1000 : 30,
+          jobId: result.requestId || 'fal-job'
         };
       }
 
