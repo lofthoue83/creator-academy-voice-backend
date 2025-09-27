@@ -83,26 +83,29 @@ app.post('/analyze-card', async (req, res) => {
     const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
     // Enhanced prompt for better recognition
-    const cardAnalysisPrompt = `Dies ist ein Scanner für Katzen-Tarot-Karten. Das sind spezielle Tarot-Karten mit niedlichen Katzen-Charakteren.
+    const cardAnalysisPrompt = `AUFGABE: Lies NUR den Text im goldenen Banner am unteren Rand der Karte.
 
-WICHTIG: Jede Karte hat ein goldenes/gelbes Banner am unteren Rand mit dem Kartennamen in GROßBUCHSTABEN.
+Diese Katzen-Tarot-Karten haben IMMER ein goldenes/gelbes Banner mit schwarzem Text am unteren Rand.
 
-Analysiere das Bild systematisch:
-1. Siehst du eine Karte mit einem goldenen/gelben Banner am unteren Rand?
-2. Der Banner-Text ist IMMER in Großbuchstaben geschrieben
-3. Lies den Text im Banner genau - häufige Karten sind:
-   - Major Arcana: THE FOOL, THE MAGICIAN, THE HIGH PRIESTESS, THE EMPRESS, THE EMPEROR, THE HIEROPHANT, THE LOVERS, THE CHARIOT, STRENGTH, THE HERMIT, WHEEL OF FORTUNE, JUSTICE, THE HANGED MAN, DEATH, TEMPERANCE, THE DEVIL, THE TOWER, THE STAR, THE MOON, THE SUN, JUDGEMENT, THE WORLD
-   - Spezielle Karten: THE ICEBEAR
-   - Court Cards: PAGE OF CUPS, KNIGHT OF CUPS, QUEEN OF CUPS, KING OF CUPS (auch für WANDS, SWORDS, PENTACLES)
-   - Aces: ACE OF CUPS, ACE OF WANDS, ACE OF SWORDS, ACE OF PENTACLES
+SCHRITT 1: Schaue ZUERST nur auf den unteren Rand der Karte
+SCHRITT 2: Dort ist ein goldenes/gelbes Banner mit schwarzem Text
+SCHRITT 3: Lies NUR diesen Text im Banner - nichts anderes!
 
-WICHTIG:
-- Römische Zahlen auf der Karte (wie XIX) sind NICHT der Kartenname
-- Der Kartenname steht IMMER im goldenen Banner unten
-- Antworte NUR mit dem exakten Text aus dem Banner
+Der Text im Banner ist IMMER einer dieser Namen:
+- Major Arcana: THE FOOL, THE MAGICIAN, THE HIGH PRIESTESS, THE EMPRESS, THE EMPEROR, THE HIEROPHANT, THE LOVERS, THE CHARIOT, STRENGTH, THE HERMIT, WHEEL OF FORTUNE, JUSTICE, THE HANGED MAN, DEATH, TEMPERANCE, THE DEVIL, THE TOWER, THE STAR, THE MOON, THE SUN, JUDGEMENT, THE WORLD
+- Spezielle Karten: THE ICEBEAR, THE UNICORN
+- Court Cards: PAGE/KNIGHT/QUEEN/KING OF CUPS/WANDS/SWORDS/PENTACLES
+- Aces: ACE OF CUPS/WANDS/SWORDS/PENTACLES
 
-Wenn du den Text nicht klar lesen kannst oder unsicher bist, antworte mit: "Unbekannt"
-Wenn es keine Tarot-Karte ist, antworte mit: "Falsche Karte"`;
+IGNORIERE:
+- Alle anderen Texte auf der Karte
+- Römische Zahlen (wie XIX)
+- Das Bild selbst
+
+FOKUSSIERE DICH NUR AUF: Das goldene Banner am unteren Rand!
+
+Antworte NUR mit dem exakten Text aus dem Banner (z.B. "THE UNICORN").
+Bei Unsicherheit: "Unbekannt"`;
 
     // Model hierarchy for retry mechanism
     const models = [
