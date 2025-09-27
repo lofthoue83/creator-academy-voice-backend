@@ -4,9 +4,13 @@ const express = require('express');
 const cors = require('cors');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const axios = require('axios');
+const VoiceTarotService = require('./voice-tarot');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize Voice Tarot Service
+const voiceTarot = new VoiceTarotService();
 
 // Increase payload size limit for base64 images
 app.use(cors());
@@ -265,6 +269,75 @@ Bei Unsicherheit: "Unbekannt"`;
   }
 });
 
+// Voice Tarot Reading endpoint
+app.post('/generate-voice-reading', async (req, res) => {
+  try {
+    const { cards, spreadType = 'three-card', voiceStyle = 'mystical' } = req.body;
+
+    if (!cards || !Array.isArray(cards) || cards.length === 0) {
+      return res.status(400).json({ error: 'No cards provided' });
+    }
+
+    // Generate voice reading
+    const result = await voiceTarot.generateVoiceReading(cards, spreadType, voiceStyle);
+
+    res.json({
+      success: true,
+      ...result
+    });
+
+  } catch (error) {
+    console.error('Voice generation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate voice reading',
+      details: error.message
+    });
+  }
+});
+
+// Stream audio endpoint
+app.get('/stream-audio/:jobId', async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    const audioStream = await voiceTarot.streamAudio(jobId);
+
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Transfer-Encoding', 'chunked');
+
+    audioStream.pipe(res);
+
+  } catch (error) {
+    console.error('Streaming error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to stream audio',
+      details: error.message
+    });
+  }
+});
+
+// Get available voices endpoint
+app.get('/available-voices', async (req, res) => {
+  try {
+    const voices = await voiceTarot.getAvailableVoices();
+
+    res.json({
+      success: true,
+      voices: voices
+    });
+
+  } catch (error) {
+    console.error('Error fetching voices:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch available voices',
+      details: error.message
+    });
+  }
+});
+
 // Health check
 app.get('/', (req, res) => {
   res.json({
@@ -272,7 +345,10 @@ app.get('/', (req, res) => {
     endpoints: {
       createPaymentIntent: 'POST /create-payment-intent',
       webhook: 'POST /webhook',
-      analyzeCard: 'POST /analyze-card'
+      analyzeCard: 'POST /analyze-card',
+      generateVoiceReading: 'POST /generate-voice-reading',
+      streamAudio: 'GET /stream-audio/:jobId',
+      availableVoices: 'GET /available-voices'
     }
   });
 });
