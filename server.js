@@ -73,7 +73,7 @@ app.post('/webhook', express.raw({ type: 'application/json' }), async (req, res)
 // Claude Vision card analysis endpoint with retry mechanism
 app.post('/analyze-card', async (req, res) => {
   try {
-    const { imageBase64 } = req.body;
+    const { imageBase64, mode = 'single' } = req.body; // mode: 'single' or 'multiple'
 
     if (!imageBase64) {
       return res.status(400).json({ error: 'No image provided' });
@@ -82,8 +82,40 @@ app.post('/analyze-card', async (req, res) => {
     // Claude API configuration
     const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
-    // Enhanced prompt for better recognition
-    const cardAnalysisPrompt = `AUFGABE: Lies NUR den Text im goldenen Banner am unteren Rand der Karte.
+    // Choose prompt based on mode
+    let cardAnalysisPrompt;
+
+    if (mode === 'multiple') {
+      // Prompt for multiple cards
+      cardAnalysisPrompt = `AUFGABE: Erkenne ALLE Katzen-Tarot-Karten im Bild.
+
+Diese Katzen-Tarot-Karten haben IMMER ein goldenes/gelbes Banner mit schwarzem Text am unteren Rand.
+
+ANLEITUNG:
+1. Schaue das GESAMTE Bild an und zähle wie viele Karten du siehst
+2. Für JEDE Karte: Finde das goldene Banner am unteren Rand
+3. Lies den Text in JEDEM Banner von LINKS nach RECHTS
+
+WICHTIG:
+- Es können 1-5 Karten im Bild sein
+- Lies sie in der Reihenfolge: Von links nach rechts, dann von oben nach unten
+- Jede Karte hat IMMER ein goldenes Banner am unteren Rand
+
+Mögliche Kartennamen:
+- Major Arcana: THE FOOL, THE MAGICIAN, THE HIGH PRIESTESS, THE EMPRESS, THE EMPEROR, THE HIEROPHANT, THE LOVERS, THE CHARIOT, STRENGTH, THE HERMIT, WHEEL OF FORTUNE, JUSTICE, THE HANGED MAN, DEATH, TEMPERANCE, THE DEVIL, THE TOWER, THE STAR, THE MOON, THE SUN, JUDGEMENT, THE WORLD
+- Spezielle: THE ICEBEAR, THE UNICORN
+- Court Cards: PAGE/KNIGHT/QUEEN/KING OF CUPS/WANDS/SWORDS/PENTACLES
+- Aces: ACE OF CUPS/WANDS/SWORDS/PENTACLES
+
+ANTWORTFORMAT:
+- Bei 2 Karten: "KARTE1, KARTE2" (z.B. "THE UNICORN, THE ICEBEAR")
+- Bei 3 Karten: "KARTE1, KARTE2, KARTE3"
+- Bei 5 Karten: "OBEN: KARTE1, LINKS: KARTE2, MITTE: KARTE3, RECHTS: KARTE4, UNTEN: KARTE5"
+
+Antworte NUR mit den Kartennamen, getrennt durch Kommas.`;
+    } else {
+      // Original single card prompt
+      cardAnalysisPrompt = `AUFGABE: Lies NUR den Text im goldenen Banner am unteren Rand der Karte.
 
 Diese Katzen-Tarot-Karten haben IMMER ein goldenes/gelbes Banner mit schwarzem Text am unteren Rand.
 
@@ -106,6 +138,7 @@ FOKUSSIERE DICH NUR AUF: Das goldene Banner am unteren Rand!
 
 Antworte NUR mit dem exakten Text aus dem Banner (z.B. "THE UNICORN").
 Bei Unsicherheit: "Unbekannt"`;
+    }
 
     // Model hierarchy for retry mechanism
     const models = [
@@ -189,16 +222,31 @@ Bei Unsicherheit: "Unbekannt"`;
 
     // If we got a result, return it
     if (detectedMotif) {
-      res.json({
-        success: true,
-        motif: detectedMotif,
-        modelUsed: modelUsed,
-        cached: false
-      });
+      // Parse multiple cards if in multiple mode
+      if (mode === 'multiple') {
+        const cards = detectedMotif.split(',').map(card => card.trim());
+        res.json({
+          success: true,
+          mode: 'multiple',
+          cards: cards,
+          motif: detectedMotif, // Keep for backwards compatibility
+          modelUsed: modelUsed,
+          cached: false
+        });
+      } else {
+        res.json({
+          success: true,
+          mode: 'single',
+          motif: detectedMotif,
+          modelUsed: modelUsed,
+          cached: false
+        });
+      }
     } else {
       // No models could recognize the card
       res.json({
         success: true,
+        mode: mode,
         motif: 'Unbekannt',
         modelUsed: 'none',
         cached: false
