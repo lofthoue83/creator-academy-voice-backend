@@ -26,10 +26,11 @@ class VoiceTarotService {
       console.log('Full URL:', `${this.baseUrl}/run`);
       console.log('API Key (first 10 chars):', RUNPOD_API_KEY ? RUNPOD_API_KEY.substring(0, 10) : 'NOT SET');
 
-      // Chatterbox uses simple prompt format, not OpenAI format
+      // Try both text and prompt fields to ensure compatibility
       const requestBody = {
         input: {
-          prompt: prompt.substring(0, 500) // Chatterbox expects 'prompt' field
+          text: prompt.substring(0, 500), // Some handlers expect 'text'
+          prompt: prompt.substring(0, 500) // Others expect 'prompt'
         }
       };
 
