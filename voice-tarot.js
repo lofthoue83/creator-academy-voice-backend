@@ -118,41 +118,41 @@ class VoiceTarotService {
       // Add more card meanings...
     };
 
-    let reading = `[Pause] ... [Flüsternd] Willkommen, suchende Seele, zu deiner mystischen Tarot-Lesung. `;
-    reading += `[Normal] Die Karten haben gesprochen. ${cards.length} heilige Symbole wurden für dich enthüllt. `;
-    reading += `[Langsam] Atme tief ein... und aus... Öffne dein Herz für die Botschaften des Universums.\n\n`;
+    let reading = `... Willkommen, suchende Seele, zu deiner mystischen Tarot-Lesung. `;
+    reading += `Die Karten haben gesprochen. ${cards.length} heilige Symbole wurden für dich enthüllt. `;
+    reading += `Atme tief ein... ... und aus... ... Öffne dein Herz für die Botschaften des Universums.\n\n`;
 
     // Three-card spread
     if (spreadType === 'three-card' && cards.length >= 3) {
-      reading += `[Mystisch] Die erste Karte liegt im Schatten deiner Vergangenheit... [Pause] ${cards[0]}.\n`;
-      reading += `[Langsam] ${cardDescriptions[cards[0]] || 'Diese Karte birgt uralte Geheimnisse, die nur du entschlüsseln kannst.'}`;
-      reading += `\n\n[Pause] ... \n\n`;
+      reading += `Die erste Karte liegt im Schatten deiner Vergangenheit... ... ${cards[0]}.\n`;
+      reading += `${cardDescriptions[cards[0]] || 'Diese Karte birgt uralte Geheimnisse, die nur du entschlüsseln kannst.'}`;
+      reading += `\n\n... ... ...\n\n`;
 
-      reading += `[Klar] Die zweite Karte pulsiert mit der Energie deiner Gegenwart... ${cards[1]}.\n`;
-      reading += `[Intensiv] ${cardDescriptions[cards[1]] || 'Der gegenwärtige Moment vibriert mit unendlichen Möglichkeiten. Spürst du es?'}`;
-      reading += `\n\n[Pause] ... \n\n`;
+      reading += `Die zweite Karte pulsiert mit der Energie deiner Gegenwart... ${cards[1]}.\n`;
+      reading += `${cardDescriptions[cards[1]] || 'Der gegenwärtige Moment vibriert mit unendlichen Möglichkeiten. Spürst du es?'}`;
+      reading += `\n\n... ... ...\n\n`;
 
-      reading += `[Flüsternd] Die dritte Karte... [Normal] Sie enthüllt den Schleier deiner Zukunft... ${cards[2]}.\n`;
-      reading += `[Hoffnungsvoll] ${cardDescriptions[cards[2]] || 'Die Zukunft formt sich durch deine heutigen Entscheidungen. Das Schicksal liegt in deinen Händen.'}`;
+      reading += `Die dritte Karte... Sie enthüllt den Schleier deiner Zukunft... ${cards[2]}.\n`;
+      reading += `${cardDescriptions[cards[2]] || 'Die Zukunft formt sich durch deine heutigen Entscheidungen. Das Schicksal liegt in deinen Händen.'}`;
     }
 
     // Celtic Cross
     else if (spreadType === 'celtic-cross' && cards.length >= 5) {
-      reading += `[Feierlich] Das keltische Kreuz wurde für dich gelegt. Eine uralte Formation der Weisheit.\n\n`;
-      reading += `[Zentral] Im Herzen deiner Situation liegt ${cards[0]}. [Pause] ${cardDescriptions[cards[0]] || 'Das Zentrum deines Seins.'}\n\n`;
-      reading += `[Dramatisch] Gekreuzt wird sie von ${cards[1]}! [Pause] ${cardDescriptions[cards[1]] || 'Die Herausforderung, die dich prüft.'}\n\n`;
-      reading += `[Erhaben] Über dir, wie ein Stern am Himmel, schwebt ${cards[2]}. ${cardDescriptions[cards[2]] || 'Dein bewusstes Streben.'}\n\n`;
-      reading += `[Tief] Tief in deinem Unterbewusstsein ruht ${cards[3]}. ${cardDescriptions[cards[3]] || 'Die verborgene Kraft in dir.'}\n\n`;
-      reading += `[Visionär] Und die Zukunft... [Pause] Sie zeigt ${cards[4]}. ${cardDescriptions[cards[4]] || 'Das mögliche Ergebnis deiner Reise.'}\n`;
+      reading += `Das keltische Kreuz wurde für dich gelegt. Eine uralte Formation der Weisheit.\n\n`;
+      reading += `Im Herzen deiner Situation liegt ${cards[0]}. ... ${cardDescriptions[cards[0]] || 'Das Zentrum deines Seins.'}\n\n`;
+      reading += `Gekreuzt wird sie von ${cards[1]}! ... ${cardDescriptions[cards[1]] || 'Die Herausforderung, die dich prüft.'}\n\n`;
+      reading += `Über dir, wie ein Stern am Himmel, schwebt ${cards[2]}. ${cardDescriptions[cards[2]] || 'Dein bewusstes Streben.'}\n\n`;
+      reading += `Tief in deinem Unterbewusstsein ruht ${cards[3]}. ${cardDescriptions[cards[3]] || 'Die verborgene Kraft in dir.'}\n\n`;
+      reading += `Und die Zukunft... ... Sie zeigt ${cards[4]}. ${cardDescriptions[cards[4]] || 'Das mögliche Ergebnis deiner Reise.'}\n`;
     }
 
     // Single card
     else {
-      reading += `[Bedeutungsvoll] Eine einzelne Karte wurde gezogen... ${cards[0]}.\n\n`;
-      reading += `[Intensiv] ${cardDescriptions[cards[0]] || 'Diese eine Karte trägt die gesamte Botschaft des Universums für dich. Höre genau hin.'}`;
+      reading += `Eine einzelne Karte wurde gezogen... ${cards[0]}.\n\n`;
+      reading += `${cardDescriptions[cards[0]] || 'Diese eine Karte trägt die gesamte Botschaft des Universums für dich. Höre genau hin.'}`;
     }
 
-    reading += `\n\n[Pause] ... [Flüsternd] Die Karten haben gesprochen. [Normal] Möge ihre Weisheit dich auf deinem Pfad erleuchten. [Sanft] Vertraue dem Prozess. [Pause] Namaste, geliebte Seele.`;
+    reading += `\n\n... ... Die Karten haben gesprochen. Möge ihre Weisheit dich auf deinem Pfad erleuchten. Vertraue dem Prozess. ... Namaste, geliebte Seele.`;
 
     return reading;
   }
