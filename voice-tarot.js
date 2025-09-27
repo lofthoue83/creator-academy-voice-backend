@@ -38,11 +38,11 @@ class VoiceTarotService {
         input: {
           text: textToSpeak,
           voice_setting: {
-            voice_id: voiceStyle === 'mystical' ? 'Deep_Voice_Man' : 'Wise_Woman',  // Männliche tiefe Stimme für mystisch
-            speed: voiceStyle === 'mystical' ? 1.1 : 1.2,  // Schneller, dynamischer
+            voice_id: 'Wise_Woman',  // Immer weibliche Stimme verwenden
+            speed: 1.15,  // Optimal für dynamische Lesung
             vol: 1.0,
-            pitch: voiceStyle === 'mystical' ? 2 : 0,      // Etwas höher für Comic-Style
-            emotion: voiceStyle === 'mystical' ? 'surprised' : 'happy'  // Überrascht/aufgeregt für Comic-Feeling
+            pitch: 1,     // Leicht höher für freundliche Stimme
+            emotion: 'happy'  // Fröhliche, enthusiastische Stimmung
           },
           audio_setting: {
             sample_rate: 32000,    // Must be integer from allowed values
