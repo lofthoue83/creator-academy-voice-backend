@@ -26,13 +26,10 @@ class VoiceTarotService {
       console.log('Full URL:', `${this.baseUrl}/runsync`);
       console.log('API Key (first 10 chars):', RUNPOD_API_KEY ? RUNPOD_API_KEY.substring(0, 10) : 'NOT SET');
 
+      // Chatterbox uses simple prompt format, not OpenAI format
       const requestBody = {
         input: {
-          text: prompt.substring(0, 500), // Limit text for testing
-          model: "tts-1",
-          voice: "nova",
-          response_format: "mp3",
-          speed: 0.9
+          prompt: prompt.substring(0, 500) // Chatterbox expects 'prompt' field
         }
       };
 
@@ -59,10 +56,20 @@ class VoiceTarotService {
       if (response.data) {
         // For runsync, the output is directly in the response
         if (response.data.output) {
-          // If output contains base64 audio
-          if (response.data.output.audio_base64) {
-            // Convert base64 to data URL for playback
-            const audioUrl = `data:audio/mp3;base64,${response.data.output.audio_base64}`;
+          // Chatterbox returns audio as base64 or file path
+          if (response.data.output.audio) {
+            // If it's base64 audio data
+            const audioUrl = `data:audio/wav;base64,${response.data.output.audio}`;
+            return {
+              audioUrl: audioUrl,
+              text: prompt,
+              duration: response.data.output.duration || 30,
+              jobId: response.data.id || 'sync-job'
+            };
+          }
+          // If output contains audio_base64
+          else if (response.data.output.audio_base64) {
+            const audioUrl = `data:audio/wav;base64,${response.data.output.audio_base64}`;
             return {
               audioUrl: audioUrl,
               text: prompt,
@@ -78,6 +85,19 @@ class VoiceTarotService {
               duration: response.data.output.duration || 30,
               jobId: response.data.id || 'sync-job'
             };
+          }
+          // If output is a string (could be base64 or path)
+          else if (typeof response.data.output === 'string') {
+            // Check if it's base64
+            if (response.data.output.length > 1000 && !response.data.output.startsWith('http')) {
+              const audioUrl = `data:audio/wav;base64,${response.data.output}`;
+              return {
+                audioUrl: audioUrl,
+                text: prompt,
+                duration: 30,
+                jobId: response.data.id || 'sync-job'
+              };
+            }
           }
         }
 
