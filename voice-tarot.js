@@ -1,12 +1,12 @@
 const axios = require('axios');
 
-// RunPod Chatterbox Configuration
+// RunPod MiniMax Speech-02 HD Configuration
 const RUNPOD_API_KEY = process.env.RUNPOD_API_KEY || 'YOUR_RUNPOD_KEY';
-const CHATTERBOX_ENDPOINT = process.env.CHATTERBOX_ENDPOINT || 'chatterbox-tts';
 
 class VoiceTarotService {
   constructor() {
-    this.baseUrl = `https://api.runpod.ai/v2/${CHATTERBOX_ENDPOINT}`;
+    // MiniMax Speech-02 HD uses RunPod AI API endpoint
+    this.baseUrl = 'https://api.runpod.ai/v1/playground/audio/minimax-speech-02-hd';
   }
 
   /**
@@ -21,24 +21,28 @@ class VoiceTarotService {
       // Create tarot-specific prompt
       const prompt = this.createTarotPrompt(cards, spreadType);
 
-      console.log('Generating voice with RunPod API...');
+      console.log('Generating voice with MiniMax Speech-02 HD...');
       console.log('Endpoint:', this.baseUrl);
-      console.log('Full URL:', `${this.baseUrl}/run`);
       console.log('API Key (first 10 chars):', RUNPOD_API_KEY ? RUNPOD_API_KEY.substring(0, 10) : 'NOT SET');
 
-      // Try both text and prompt fields to ensure compatibility
+      // MiniMax Speech-02 HD request format
       const requestBody = {
-        input: {
-          text: prompt.substring(0, 500), // Some handlers expect 'text'
-          prompt: prompt.substring(0, 500) // Others expect 'prompt'
-        }
+        prompt: prompt.substring(0, 10000), // Max 10,000 characters
+        voice_id: voiceStyle === 'mystical' ? 'Wise_Woman' : 'Deep_Voice_Man',
+        speed: 0.9, // Slightly slower for mystical effect
+        volume: 1.0,
+        pitch: 0,
+        emotion: 'calm',
+        sample_rate: 48000,
+        bitrate: 128,
+        channel: 2
       };
 
       console.log('Request body:', JSON.stringify(requestBody, null, 2));
 
-      // Use /run instead of /runsync (which doesn't exist for this endpoint)
+      // MiniMax uses direct endpoint without /run
       const response = await axios.post(
-        `${this.baseUrl}/run`,
+        this.baseUrl,
         requestBody,
         {
           headers: {
@@ -49,81 +53,48 @@ class VoiceTarotService {
         }
       );
 
-      console.log('RunPod response status:', response.status);
-      console.log('RunPod response headers:', response.headers);
-      console.log('RunPod response data:', JSON.stringify(response.data, null, 2));
+      console.log('MiniMax response status:', response.status);
+      console.log('MiniMax response data:', JSON.stringify(response.data, null, 2));
 
-      // Check if we got a direct response from runsync
+      // MiniMax Speech-02 HD returns audio directly
       if (response.data) {
-        // For runsync, the output is directly in the response
-        if (response.data.output) {
-          // Chatterbox returns audio as base64 or file path
+        // Check for audio data in response
+        if (response.data.audio) {
+          // Audio is returned as base64
+          const audioUrl = `data:audio/mp3;base64,${response.data.audio}`;
+          return {
+            audioUrl: audioUrl,
+            text: prompt,
+            duration: response.data.duration || 30,
+            jobId: response.data.id || 'minimax-job'
+          };
+        }
+        // Check for audio URL
+        else if (response.data.audio_url) {
+          return {
+            audioUrl: response.data.audio_url,
+            text: prompt,
+            duration: response.data.duration || 30,
+            jobId: response.data.id || 'minimax-job'
+          };
+        }
+        // Check for output field
+        else if (response.data.output) {
           if (response.data.output.audio) {
-            // If it's base64 audio data
-            const audioUrl = `data:audio/wav;base64,${response.data.output.audio}`;
+            const audioUrl = `data:audio/mp3;base64,${response.data.output.audio}`;
             return {
               audioUrl: audioUrl,
               text: prompt,
               duration: response.data.output.duration || 30,
-              jobId: response.data.id || 'sync-job'
+              jobId: response.data.id || 'minimax-job'
             };
           }
-          // If output contains audio_base64
-          else if (response.data.output.audio_base64) {
-            const audioUrl = `data:audio/wav;base64,${response.data.output.audio_base64}`;
-            return {
-              audioUrl: audioUrl,
-              text: prompt,
-              duration: response.data.output.duration || 30,
-              jobId: response.data.id || 'sync-job'
-            };
-          }
-          // If output contains audio URL
           else if (response.data.output.audio_url) {
             return {
               audioUrl: response.data.output.audio_url,
               text: prompt,
               duration: response.data.output.duration || 30,
-              jobId: response.data.id || 'sync-job'
-            };
-          }
-          // If output is a string (could be base64 or path)
-          else if (typeof response.data.output === 'string') {
-            // Check if it's base64
-            if (response.data.output.length > 1000 && !response.data.output.startsWith('http')) {
-              const audioUrl = `data:audio/wav;base64,${response.data.output}`;
-              return {
-                audioUrl: audioUrl,
-                text: prompt,
-                duration: 30,
-                jobId: response.data.id || 'sync-job'
-              };
-            }
-          }
-        }
-
-        // If response has different structure (job ID for async)
-        if (response.data.id && !response.data.output) {
-          // Wait and poll for result
-          await new Promise(resolve => setTimeout(resolve, 2000));
-
-          const statusResponse = await axios.get(
-            `${this.baseUrl}/status/${response.data.id}`,
-            {
-              headers: {
-                'Authorization': `Bearer ${RUNPOD_API_KEY}`
-              }
-            }
-          );
-
-          console.log('Status response:', statusResponse.data);
-
-          if (statusResponse.data && statusResponse.data.output) {
-            return {
-              audioUrl: statusResponse.data.output.audio_url || null,
-              text: prompt,
-              duration: statusResponse.data.output.duration || 30,
-              jobId: response.data.id
+              jobId: response.data.id || 'minimax-job'
             };
           }
         }
@@ -139,15 +110,14 @@ class VoiceTarotService {
       };
 
     } catch (error) {
-      console.error('Voice generation error:');
+      console.error('MiniMax TTS error:');
       console.error('Error message:', error.message);
 
       if (error.response) {
         console.error('Response status:', error.response.status);
         console.error('Response data:', JSON.stringify(error.response.data, null, 2));
-        console.error('Response headers:', error.response.headers);
       } else if (error.request) {
-        console.error('No response received. Request:', error.request);
+        console.error('No response received');
       } else {
         console.error('Error setting up request:', error.message);
       }
