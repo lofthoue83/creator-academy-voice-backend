@@ -21,7 +21,23 @@ class VoiceTarotService {
       // Create tarot-specific prompt
       const prompt = this.createTarotPrompt(cards, spreadType);
 
-      // Call Chatterbox API
+      console.log('Generating voice with RunPod API...');
+      console.log('Endpoint:', this.baseUrl);
+      console.log('API Key present:', !!RUNPOD_API_KEY);
+
+      // For now, return a mock response for testing
+      // TODO: Implement actual RunPod Chatterbox API call when properly configured
+
+      // Temporary solution: Use text-only response
+      return {
+        audioUrl: null, // No audio yet
+        text: prompt,
+        duration: 30,
+        jobId: 'mock-job-id',
+        message: 'Voice generation wird noch konfiguriert. Hier ist der Text für deine Lesung:'
+      };
+
+      /* Actual RunPod implementation - uncomment when API is ready:
       const response = await axios.post(
         `${this.baseUrl}/runsync`,
         {
@@ -30,7 +46,7 @@ class VoiceTarotService {
             voice_settings: {
               style: voiceStyle,
               language: 'de',
-              speed: 0.95, // Slightly slower for mystical effect
+              speed: 0.95,
               pitch: 1.0
             },
             output_format: 'mp3',
@@ -51,9 +67,10 @@ class VoiceTarotService {
         duration: response.data.output.duration,
         jobId: response.data.id
       };
+      */
 
     } catch (error) {
-      console.error('Voice generation error:', error);
+      console.error('Voice generation error:', error.response?.data || error.message);
       throw error;
     }
   }
