@@ -33,21 +33,23 @@ class VoiceTarotService {
       // Limit to 5000 characters for fal.ai
       const textToSpeak = prompt.substring(0, 5000);
 
-      // Use fal.ai to generate speech
+      // Use fal.ai to generate speech with correct format
       const result = await fal.subscribe(this.modelId, {
         input: {
           text: textToSpeak,
-          // Voice settings for mystical effect
           voice_setting: {
+            voice_id: voiceStyle === 'mystical' ? 'Wise_Woman' : 'Deep_Voice_Man',
             speed: voiceStyle === 'mystical' ? 0.9 : 1.0,
-            volume: 1.0,
+            vol: 1.0,
             pitch: voiceStyle === 'mystical' ? -2 : 0
           },
           audio_setting: {
-            sample_rate: 48000,
-            bitrate: 128,
-            channel: 2
-          }
+            sample_rate: "32000",  // Must be string
+            bitrate: "128000",     // Must be string
+            format: "mp3",
+            channel: "2"           // Must be string
+          },
+          output_format: "url"     // Get URL instead of hex
         },
         logs: true,
         onQueueUpdate: (update) => {
