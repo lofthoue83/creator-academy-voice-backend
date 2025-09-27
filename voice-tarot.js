@@ -23,19 +23,25 @@ class VoiceTarotService {
 
       console.log('Generating voice with RunPod API...');
       console.log('Endpoint:', this.baseUrl);
+      console.log('Full URL:', `${this.baseUrl}/runsync`);
+      console.log('API Key (first 10 chars):', RUNPOD_API_KEY ? RUNPOD_API_KEY.substring(0, 10) : 'NOT SET');
+
+      const requestBody = {
+        input: {
+          text: prompt.substring(0, 500), // Limit text for testing
+          model: "tts-1",
+          voice: "nova",
+          response_format: "mp3",
+          speed: 0.9
+        }
+      };
+
+      console.log('Request body:', JSON.stringify(requestBody, null, 2));
 
       // Active RunPod implementation with correct endpoint
       const response = await axios.post(
         `${this.baseUrl}/runsync`,
-        {
-          input: {
-            text: prompt,
-            model: "tts-1",  // OpenAI compatible
-            voice: "nova",   // Available voice
-            response_format: "mp3",
-            speed: 0.9
-          }
-        },
+        requestBody,
         {
           headers: {
             'Authorization': `Bearer ${RUNPOD_API_KEY}`,
@@ -45,7 +51,9 @@ class VoiceTarotService {
         }
       );
 
-      console.log('RunPod response:', response.data);
+      console.log('RunPod response status:', response.status);
+      console.log('RunPod response headers:', response.headers);
+      console.log('RunPod response data:', JSON.stringify(response.data, null, 2));
 
       // Check if we got a direct response from runsync
       if (response.data) {
@@ -110,7 +118,18 @@ class VoiceTarotService {
       };
 
     } catch (error) {
-      console.error('Voice generation error:', error.response?.data || error.message);
+      console.error('Voice generation error:');
+      console.error('Error message:', error.message);
+
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', JSON.stringify(error.response.data, null, 2));
+        console.error('Response headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('No response received. Request:', error.request);
+      } else {
+        console.error('Error setting up request:', error.message);
+      }
 
       // Return text-only version on error
       return {
@@ -118,7 +137,8 @@ class VoiceTarotService {
         text: this.createTarotPrompt(cards, spreadType),
         duration: 30,
         jobId: 'error',
-        message: 'Audio konnte nicht generiert werden. Hier ist der Text deiner Lesung:'
+        message: 'Audio konnte nicht generiert werden. Hier ist der Text deiner Lesung:',
+        debugError: error.response?.data || error.message
       };
     }
   }
