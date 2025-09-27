@@ -23,55 +23,76 @@ class VoiceTarotService {
 
       console.log('Generating voice with RunPod API...');
       console.log('Endpoint:', this.baseUrl);
-      console.log('API Key present:', !!RUNPOD_API_KEY);
 
-      // For now, return a mock response for testing
-      // TODO: Implement actual RunPod Chatterbox API call when properly configured
-
-      // Temporary solution: Use text-only response
-      return {
-        audioUrl: null, // No audio yet
-        text: prompt,
-        duration: 30,
-        jobId: 'mock-job-id',
-        message: 'Voice generation wird noch konfiguriert. Hier ist der Text für deine Lesung:'
-      };
-
-      /* Actual RunPod implementation - uncomment when API is ready:
+      // Active RunPod implementation
       const response = await axios.post(
-        `${this.baseUrl}/runsync`,
+        `${this.baseUrl}/run`,
         {
           input: {
-            text: prompt,
-            voice_settings: {
-              style: voiceStyle,
-              language: 'de',
-              speed: 0.95,
-              pitch: 1.0
-            },
-            output_format: 'mp3',
-            stream: true
+            prompt: prompt,
+            language: 'de',
+            voice: 'female_1', // German female voice
+            speed: 0.9  // Slightly slower for mystical effect
           }
         },
         {
           headers: {
             'Authorization': `Bearer ${RUNPOD_API_KEY}`,
             'Content-Type': 'application/json'
-          }
+          },
+          timeout: 30000 // 30 second timeout
         }
       );
 
+      console.log('RunPod response:', response.data);
+
+      // RunPod returns job ID, we need to poll for result
+      if (response.data && response.data.id) {
+        // Wait a moment for processing
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Get status
+        const statusResponse = await axios.get(
+          `${this.baseUrl}/status/${response.data.id}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${RUNPOD_API_KEY}`
+            }
+          }
+        );
+
+        console.log('Status response:', statusResponse.data);
+
+        if (statusResponse.data && statusResponse.data.output) {
+          return {
+            audioUrl: statusResponse.data.output.audio_url || null,
+            text: prompt,
+            duration: statusResponse.data.output.duration || 30,
+            jobId: response.data.id
+          };
+        }
+      }
+
+      // Fallback to text-only
       return {
-        audioUrl: response.data.output.audio_url,
-        text: response.data.output.text,
-        duration: response.data.output.duration,
-        jobId: response.data.id
+        audioUrl: null,
+        text: prompt,
+        duration: 30,
+        jobId: response.data?.id || 'unknown',
+        message: 'Audio-Generierung läuft noch. Hier ist der Text deiner Lesung:'
       };
-      */
 
     } catch (error) {
       console.error('Voice generation error:', error.response?.data || error.message);
-      throw error;
+
+      // Return text-only version on error
+      return {
+        audioUrl: null,
+        text: this.createTarotPrompt(cards, spreadType),
+        duration: 30,
+        jobId: 'error',
+        message: 'Audio konnte nicht generiert werden. Hier ist der Text deiner Lesung:'
+      };
     }
   }
 
