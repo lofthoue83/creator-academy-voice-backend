@@ -1,4 +1,5 @@
 const { fal } = require('@fal-ai/client');
+const axios = require('axios');
 
 // Configure fal.ai API key - only use FAL_API_KEY, not RUNPOD
 const FAL_API_KEY = process.env.FAL_API_KEY;
@@ -9,6 +10,9 @@ if (FAL_API_KEY) {
 } else {
   console.error('FAL_API_KEY is not set!');
 }
+
+// Claude API key for dynamic text generation
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
 class VoiceTarotService {
   constructor() {
@@ -24,8 +28,14 @@ class VoiceTarotService {
    */
   async generateVoiceReading(cards, spreadType = 'three-card', voiceStyle = 'mystical') {
     try {
-      // Create tarot-specific prompt
-      const prompt = this.createTarotPrompt(cards, spreadType);
+      // Generate dynamic text with Claude API if we have 5 cards
+      let prompt;
+      if (cards.length >= 5 && ANTHROPIC_API_KEY) {
+        prompt = await this.generateDynamicReading(cards);
+      } else {
+        // Fallback to static prompt
+        prompt = this.createTarotPrompt(cards, spreadType);
+      }
 
       console.log('Generating voice with fal.ai MiniMax Speech-02 HD...');
       console.log('Text length:', prompt.length, 'characters');
@@ -177,6 +187,83 @@ class VoiceTarotService {
     reading += `REMEMBER: Du bist ein MAGNET für Wunder! Diese Woche gehört DIR! 🚀✨`;
 
     return reading;
+  }
+
+  /**
+   * Generate dynamic spiritual weekly reading using Claude API
+   */
+  async generateDynamicReading(cards) {
+    try {
+      console.log('Generating dynamic reading with Claude for cards:', cards);
+
+      // Card position meanings for 5-card spread
+      const positions = {
+        0: 'Vergangenheit',
+        1: 'Gegenwart',
+        2: 'Zukunft',
+        3: 'Herausforderung',
+        4: 'Outcome/Rat'
+      };
+
+      // Create prompt for Claude
+      const systemPrompt = `Du bist eine spirituelle Tarot-Beraterin, die warmherzige und persönliche Wochenlesungen erstellt.
+Dein Stil ist:
+- Persönlich und einfühlsam (duze den Leser)
+- Konkrete Alltagssituationen einbeziehen
+- Spirituell aber bodenständig
+- Ermutigend und positiv
+- Etwa 1800-2200 Zeichen`;
+
+      const userPrompt = `Erstelle eine spirituelle Wochenlesung für diese 5 Katzen-Tarot-Karten:
+
+${cards.map((card, i) => `${positions[i]}: ${card}`).join('\n')}
+
+Schreibe eine zusammenhängende, fließende Lesung (keine Aufzählungen), die:
+1. Die spirituelle Bedeutung der Kartenkombination erklärt
+2. Konkrete Alltagssituationen und Begegnungen für diese Woche beschreibt
+3. Auf mögliche zwischenmenschliche Begegnungen eingeht
+4. Spirituelle Synchronizitäten und Zeichen erwähnt
+5. Praktische spirituelle Tipps gibt
+
+Beginne mit: "Diese Woche" und schreibe in einem warmen, persönlichen Ton.
+Verwende konkrete Beispiele wie Begegnungen im Café, Gespräche mit Fremden, überraschende Anrufe, etc.
+Länge: 1800-2200 Zeichen.`;
+
+      const response = await axios.post(
+        'https://api.anthropic.com/v1/messages',
+        {
+          model: 'claude-3-haiku-20240307',
+          max_tokens: 1000,
+          messages: [
+            {
+              role: 'user',
+              content: userPrompt
+            }
+          ],
+          system: systemPrompt
+        },
+        {
+          headers: {
+            'x-api-key': ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      const generatedText = response.data.content[0].text;
+      console.log('Generated reading length:', generatedText.length, 'characters');
+
+      // Add a mystical closing
+      const finalText = `🌟 DEINE SPIRITUELLE WOCHENLESUNG 🌟\n\n${generatedText}\n\n✨ Vertraue deiner Intuition - das Universum führt dich! ✨`;
+
+      return finalText;
+
+    } catch (error) {
+      console.error('Error generating dynamic reading:', error.message);
+      // Fallback to static prompt
+      return this.createTarotPrompt(cards, 'five-card');
+    }
   }
 
   /**

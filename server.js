@@ -289,8 +289,16 @@ app.post('/generate-voice-reading', async (req, res) => {
       return res.status(400).json({ error: 'No cards provided' });
     }
 
-    // Generate voice reading
-    const result = await voiceTarot.generateVoiceReading(cards, spreadType, voiceStyle);
+    // Determine spread type based on card count
+    let actualSpreadType = spreadType;
+    if (cards.length === 5) {
+      actualSpreadType = 'five-card';
+    } else if (cards.length >= 3) {
+      actualSpreadType = 'three-card';
+    }
+
+    // Generate voice reading (will use Claude API for 5 cards)
+    const result = await voiceTarot.generateVoiceReading(cards, actualSpreadType, voiceStyle);
 
     res.json({
       success: true,
