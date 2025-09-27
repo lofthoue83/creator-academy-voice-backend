@@ -1,12 +1,16 @@
-const axios = require('axios');
+const { fal } = require('@fal-ai/client');
 
-// RunPod MiniMax Speech-02 HD Configuration
-const RUNPOD_API_KEY = process.env.RUNPOD_API_KEY || 'YOUR_RUNPOD_KEY';
+// Configure fal.ai API key
+const FAL_API_KEY = process.env.FAL_API_KEY || process.env.RUNPOD_API_KEY;
+if (FAL_API_KEY) {
+  fal.config({
+    credentials: FAL_API_KEY
+  });
+}
 
 class VoiceTarotService {
   constructor() {
-    // MiniMax Speech-02 HD uses RunPod AI API endpoint
-    this.baseUrl = 'https://api.runpod.ai/v1/playground/audio/minimax-speech-02-hd';
+    this.modelId = 'fal-ai/minimax/speech-02-hd';
   }
 
   /**
@@ -21,83 +25,55 @@ class VoiceTarotService {
       // Create tarot-specific prompt
       const prompt = this.createTarotPrompt(cards, spreadType);
 
-      console.log('Generating voice with MiniMax Speech-02 HD...');
-      console.log('Endpoint:', this.baseUrl);
-      console.log('API Key (first 10 chars):', RUNPOD_API_KEY ? RUNPOD_API_KEY.substring(0, 10) : 'NOT SET');
+      console.log('Generating voice with fal.ai MiniMax Speech-02 HD...');
+      console.log('Text length:', prompt.length, 'characters');
 
-      // MiniMax Speech-02 HD request format
-      const requestBody = {
-        prompt: prompt.substring(0, 10000), // Max 10,000 characters
-        voice_id: voiceStyle === 'mystical' ? 'Wise_Woman' : 'Deep_Voice_Man',
-        speed: 0.9, // Slightly slower for mystical effect
-        volume: 1.0,
-        pitch: 0,
-        emotion: 'calm',
-        sample_rate: 48000,
-        bitrate: 128,
-        channel: 2
-      };
+      // Limit to 5000 characters for fal.ai
+      const textToSpeak = prompt.substring(0, 5000);
 
-      console.log('Request body:', JSON.stringify(requestBody, null, 2));
-
-      // MiniMax uses direct endpoint without /run
-      const response = await axios.post(
-        this.baseUrl,
-        requestBody,
-        {
-          headers: {
-            'Authorization': `Bearer ${RUNPOD_API_KEY}`,
-            'Content-Type': 'application/json'
+      // Use fal.ai to generate speech
+      const result = await fal.subscribe(this.modelId, {
+        input: {
+          text: textToSpeak,
+          // Voice settings for mystical effect
+          voice_setting: {
+            speed: voiceStyle === 'mystical' ? 0.9 : 1.0,
+            volume: 1.0,
+            pitch: voiceStyle === 'mystical' ? -2 : 0
           },
-          timeout: 30000 // 30 second timeout
-        }
-      );
-
-      console.log('MiniMax response status:', response.status);
-      console.log('MiniMax response data:', JSON.stringify(response.data, null, 2));
-
-      // MiniMax Speech-02 HD returns audio directly
-      if (response.data) {
-        // Check for audio data in response
-        if (response.data.audio) {
-          // Audio is returned as base64
-          const audioUrl = `data:audio/mp3;base64,${response.data.audio}`;
-          return {
-            audioUrl: audioUrl,
-            text: prompt,
-            duration: response.data.duration || 30,
-            jobId: response.data.id || 'minimax-job'
-          };
-        }
-        // Check for audio URL
-        else if (response.data.audio_url) {
-          return {
-            audioUrl: response.data.audio_url,
-            text: prompt,
-            duration: response.data.duration || 30,
-            jobId: response.data.id || 'minimax-job'
-          };
-        }
-        // Check for output field
-        else if (response.data.output) {
-          if (response.data.output.audio) {
-            const audioUrl = `data:audio/mp3;base64,${response.data.output.audio}`;
-            return {
-              audioUrl: audioUrl,
-              text: prompt,
-              duration: response.data.output.duration || 30,
-              jobId: response.data.id || 'minimax-job'
-            };
+          audio_setting: {
+            sample_rate: 48000,
+            bitrate: 128,
+            channel: 2
           }
-          else if (response.data.output.audio_url) {
-            return {
-              audioUrl: response.data.output.audio_url,
-              text: prompt,
-              duration: response.data.output.duration || 30,
-              jobId: response.data.id || 'minimax-job'
-            };
+        },
+        logs: true,
+        onQueueUpdate: (update) => {
+          if (update.status === 'IN_PROGRESS') {
+            console.log('Generating audio...');
           }
         }
+      });
+
+      console.log('fal.ai response received');
+
+      // Check if we got audio
+      if (result && result.audio_url) {
+        return {
+          audioUrl: result.audio_url,
+          text: prompt,
+          duration: result.duration || 30,
+          jobId: result.request_id || 'fal-job'
+        };
+      } else if (result && result.audio) {
+        // If audio is returned as base64
+        const audioUrl = `data:audio/mp3;base64,${result.audio}`;
+        return {
+          audioUrl: audioUrl,
+          text: prompt,
+          duration: result.duration || 30,
+          jobId: result.request_id || 'fal-job'
+        };
       }
 
       // Fallback to text-only
@@ -105,21 +81,17 @@ class VoiceTarotService {
         audioUrl: null,
         text: prompt,
         duration: 30,
-        jobId: response.data?.id || 'unknown',
-        message: 'Audio-Generierung läuft noch. Hier ist der Text deiner Lesung:'
+        jobId: 'fallback',
+        message: 'Audio konnte nicht generiert werden. Hier ist der Text deiner Lesung:'
       };
 
     } catch (error) {
-      console.error('MiniMax TTS error:');
+      console.error('fal.ai TTS error:');
       console.error('Error message:', error.message);
 
       if (error.response) {
         console.error('Response status:', error.response.status);
         console.error('Response data:', JSON.stringify(error.response.data, null, 2));
-      } else if (error.request) {
-        console.error('No response received');
-      } else {
-        console.error('Error setting up request:', error.message);
       }
 
       // Return text-only version on error
@@ -129,7 +101,7 @@ class VoiceTarotService {
         duration: 30,
         jobId: 'error',
         message: 'Audio konnte nicht generiert werden. Hier ist der Text deiner Lesung:',
-        debugError: error.response?.data || error.message
+        debugError: error.message
       };
     }
   }
@@ -189,45 +161,18 @@ class VoiceTarotService {
   }
 
   /**
-   * Stream audio in real-time
+   * Stream audio in real-time (not used with fal.ai)
    */
   async streamAudio(jobId) {
-    const streamUrl = `${this.baseUrl}/stream/${jobId}`;
-
-    try {
-      const response = await axios.get(streamUrl, {
-        headers: {
-          'Authorization': `Bearer ${RUNPOD_API_KEY}`
-        },
-        responseType: 'stream'
-      });
-
-      return response.data;
-    } catch (error) {
-      console.error('Streaming error:', error);
-      throw error;
-    }
+    // fal.ai handles streaming internally
+    return null;
   }
 
   /**
-   * Get available voices
+   * Get available voices (not applicable for MiniMax)
    */
   async getAvailableVoices() {
-    try {
-      const response = await axios.get(
-        `${this.baseUrl}/voices`,
-        {
-          headers: {
-            'Authorization': `Bearer ${RUNPOD_API_KEY}`
-          }
-        }
-      );
-
-      return response.data.voices;
-    } catch (error) {
-      console.error('Error fetching voices:', error);
-      return [];
-    }
+    return ['default'];
   }
 }
 
