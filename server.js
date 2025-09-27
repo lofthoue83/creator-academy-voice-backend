@@ -283,7 +283,13 @@ Bei Unsicherheit: "Unbekannt"`;
 // Voice Tarot Reading endpoint
 app.post('/generate-voice-reading', async (req, res) => {
   try {
-    const { cards, spreadType = 'three-card', voiceStyle = 'mystical' } = req.body;
+    const {
+      cards,
+      spreadType = 'three-card',
+      voiceStyle = 'mystical',
+      userName = 'Lena',  // User's name for personalization
+      friends = ['Max', 'Sophie', 'Julian', 'Emma']  // User's friends for magical roles
+    } = req.body;
 
     if (!cards || !Array.isArray(cards) || cards.length === 0) {
       return res.status(400).json({ error: 'No cards provided' });
@@ -297,8 +303,13 @@ app.post('/generate-voice-reading', async (req, res) => {
       actualSpreadType = 'three-card';
     }
 
-    // Generate voice reading (will use Claude API for 5 cards)
-    const result = await voiceTarot.generateVoiceReading(cards, actualSpreadType, voiceStyle);
+    // Generate voice reading with personalization
+    const result = await voiceTarot.generateVoiceReading(
+      cards,
+      actualSpreadType,
+      voiceStyle,
+      { userName, friends }  // Pass personalization data
+    );
 
     res.json({
       success: true,

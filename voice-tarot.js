@@ -26,15 +26,18 @@ class VoiceTarotService {
    * @param {String} voiceStyle - Voice style (mystical, calm, energetic)
    * @returns {Object} Audio stream and text
    */
-  async generateVoiceReading(cards, spreadType = 'three-card', voiceStyle = 'mystical') {
+  async generateVoiceReading(cards, spreadType = 'three-card', voiceStyle = 'mystical', personalization = {}) {
     try {
+      // Extract personalization data
+      const { userName = 'Lena', friends = ['Max', 'Sophie', 'Julian', 'Emma'] } = personalization;
+
       // Generate dynamic text with Claude API if we have 5 cards
       let prompt;
       if (cards.length >= 5 && ANTHROPIC_API_KEY) {
-        prompt = await this.generateDynamicReading(cards);
+        prompt = await this.generateDynamicReading(cards, userName, friends);
       } else {
-        // Fallback to static prompt
-        prompt = this.createTarotPrompt(cards, spreadType);
+        // Fallback to static prompt with personalization
+        prompt = this.createTarotPrompt(cards, spreadType, userName, friends);
       }
 
       console.log('Generating voice with fal.ai MiniMax Speech-02 HD...');
@@ -113,22 +116,22 @@ class VoiceTarotService {
   }
 
   /**
-   * Create mystical tarot reading prompt
+   * Create mystical tarot reading prompt with personalization
    */
-  createTarotPrompt(cards, spreadType) {
+  createTarotPrompt(cards, spreadType, userName = 'Lena', friends = ['Max', 'Sophie', 'Julian', 'Emma']) {
     // Wochenhoroskop-Style mit Power-Affirmationen
     const weekDays = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
 
     const cardPowerMeanings = {
       'THE FOOL': {
         symbol: '🌟 NEUANFANG',
-        weekly: 'Diese Woche ist dein kosmischer Reset-Button! Der Narr tanzt durch deine Aura und flüstert: Spring ins Unbekannte! Montag startet mit einem Energieschub der dich in neue Dimensionen katapultiert. Dienstag offenbart verborgene Talente. Mittwoch bringt überraschende Begegnungen. Donnerstag testet deinen Mut. Freitag belohnt deine Spontanität mit Magie. Am Wochenende manifestiert sich dein wahres Potenzial. Der Kosmos hat große Pläne mit dir! Vertraue dem chaotischen Tanz des Universums. Du bist bereit für diese wilde Reise. Lass alle Zweifel los und FLIEG!',
-        affirmation: 'ICH BIN DER SCHÖPFER MEINER REALITÄT! Jeder Tag ist ein neues Abenteuer!'
+        weekly: `Liebe ${userName}! Diese Woche ist DEIN kosmischer Reset-Button! Der Narr tanzt durch deine Aura! Am Montag wird ${friends[0]} dich mit einer verrückten Idee überraschen - sag JA! Dienstag offenbart ${friends[1]} dir ein Geheimnis das alles verändert. Mittwoch bringt eine Nachricht von ${friends[2]} die dein Herz höher schlagen lässt. Donnerstag testet ${friends[3]} deinen Mut mit einer Challenge. Freitag feierst du mit allen vieren einen magischen Durchbruch. ${userName}, der Kosmos hat große Pläne für dich und deine Crew! Vertraue dem chaotischen Tanz. Diese Woche gehört DIR!`,
+        affirmation: `${userName.toUpperCase()}, DU BIST DIE SCHÖPFERIN DEINER REALITÄT! Deine Freunde sind deine magischen Helfer!`
       },
       'THE MAGICIAN': {
         symbol: '⚡ MANIFESTATION',
-        weekly: 'POWER-WOCHE! Der Magier verleiht dir übermenschliche Manifestationskräfte! Montag: Deine Gedanken werden zu Gold. Dienstag: Jedes Wort hat magische Wirkung. Mittwoch: Synchronizitäten explodieren um dich herum. Donnerstag: Deine Aura leuchtet so hell dass andere geblendet werden. Freitag: Alles was du berührst verwandelt sich. Wochenende: Die Realität biegt sich deinem Willen. Du bist ein wandelndes Kraftfeld! Nutze diese Energie um deine kühnsten Träume zu verwirklichen. Das Universum ist dein Spielplatz!',
-        affirmation: 'MEINE MACHT IST GRENZENLOS! Ich erschaffe Wunder mit jedem Atemzug!'
+        weekly: `${userName}, POWER-WOCHE! Der Magier und ${friends[0]} verleihen dir Manifestationskräfte! Montag: ${friends[1]} bringt dir eine goldene Gelegenheit. Dienstag: Deine Worte zu ${friends[2]} werden Realität. Mittwoch: ${friends[3]} erlebt mit dir unglaubliche Synchronizitäten. Donnerstag: ${friends[0]} ist geblendet von deiner Aura! Freitag verwandelst du mit ${friends[1]} alles in Gold. Am Wochenende feiern alle vier Freunde deinen Erfolg! ${userName}, du bist ein wandelndes Kraftfeld! Das Universum arbeitet FÜR dich!`,
+        affirmation: `${userName.toUpperCase()}, DEINE MACHT IST GRENZENLOS! ${friends[0]} und ${friends[1]} sind deine Kraft-Multiplikatoren!`
       },
       'THE HIGH PRIESTESS': {
         symbol: '🌙 INTUITION',
@@ -152,13 +155,13 @@ class VoiceTarotService {
       },
       'THE ICEBEAR': {
         symbol: '❄️ INNERE STÄRKE',
-        weekly: 'Der EISBÄR erweckt deine arktische Superkraft! Diese Woche wirst du UNBESIEGBAR! Montag: Deine innere Stärke bricht wie ein Gletscher hervor. Dienstag: Nichts kann deine Ruhe erschüttern. Mittwoch: Du stehst fest wie ein Berg aus Eis. Donnerstag: Deine Weisheit ist kristallklar. Freitag: Du navigierst durch Stürme mit Leichtigkeit. Wochenende: Deine Kraft inspiriert andere. Du bist der ruhende Pol im Chaos - majestätisch, mächtig, unaufhaltbar! Die Kälte macht dich nur stärker!',
-        affirmation: 'ICH BIN UNERSCHÜTTERLICH! Meine Stärke bewegt Berge!'
+        weekly: `${userName}! Der EISBÄR und ${friends[2]} erwecken deine arktische Superkraft! Am Montag zeigt dir ${friends[0]} wie stark du wirklich bist. Dienstag: ${friends[1]} bewundert deine unerschütterliche Ruhe. Mittwoch steht ${friends[3]} wie ein Fels an deiner Seite. Donnerstag teilt ${friends[2]} kristallklare Weisheit mit dir. Freitag navigierst du mit allen vieren durch einen Sturm - und gewinnst! ${userName}, du bist der ruhende Pol für deine Freunde! Majestätisch und mächtig!`,
+        affirmation: `${userName.toUpperCase()} IST UNERSCHÜTTERLICH! Mit ${friends[2]} als Energieverstärker bewegst du Berge!`
       },
       'THE UNICORN': {
         symbol: '🦄 PURE MAGIE',
-        weekly: 'DAS EINHORN GALOPPIERT IN DEIN LEBEN! PURE MAGIE EXPLODIERT! Diese Woche lebst du in einem Märchen! Montag: Unmögliches wird möglich. Dienstag: Regenbogen folgen deinen Schritten. Mittwoch: Wünsche erfüllen sich spontan. Donnerstag: Du glitzerst vor magischer Energie. Freitag: Einhornstaub verwandelt alles in Gold. Wochenende: Du tanzt zwischen den Dimensionen. Glaube an JEDES Wunder - sie warten nur darauf von dir entdeckt zu werden!',
-        affirmation: 'ICH BIN PURE MAGIE! Wunder sind mein Geburtsrecht!'
+        weekly: `${userName}! DAS EINHORN GALOPPIERT ZU DIR UND ${friends[3]}! Diese Woche ist DEIN Märchen! Montag macht ${friends[0]} das Unmögliche möglich für dich. Dienstag folgt ${friends[1]} deinen Regenbogen-Spuren. Mittwoch erfüllt ${friends[2]} einen geheimen Wunsch. Donnerstag glitzerst du mit ${friends[3]} vor Magie! Freitag verwandelt ihr zu fünft alles in Gold. ${userName}, du und deine magische Crew tanzt zwischen den Welten! GLAUBE an eure Wunderkraft!`,
+        affirmation: `${userName.toUpperCase()} IST PURE MAGIE! ${friends[3]} ist dein Glücksbote aus dem Einhorn-Reich!`
       }
     };
 
@@ -166,25 +169,25 @@ class VoiceTarotService {
     const mainCard = cards[0].toUpperCase();
     const cardInfo = cardPowerMeanings[mainCard] || {
       symbol: '✨ MYSTERIUM',
-      weekly: `Diese Woche hält ${mainCard} unglaubliche Überraschungen für dich bereit! Jeden Tag entfaltet sich neue Magie. Montag beginnt mit einem Paukenschlag kosmischer Energie. Dienstag bis Donnerstag bauen sich kraftvolle Energiewellen auf. Freitag bringt den Durchbruch den du brauchst. Das Wochenende krönt alles mit purem Glück und Erfüllung. Das Universum hat große Pläne mit dir! Vertraue dem Prozess und lass dich von der Magie dieser Karte leiten. Du bist bereit für diese transformative Woche!`,
-      affirmation: 'ICH BIN BEREIT FÜR WUNDER! Das Universum arbeitet FÜR mich!'
+      weekly: `${userName}! Diese Woche hält ${mainCard} unglaubliche Überraschungen für dich und ${friends[0]} bereit! Montag startet mit einer Nachricht von ${friends[1]}. Dienstag bis Donnerstag erlebst du mit ${friends[2]} kraftvolle Synchronizitäten. Freitag bringt ${friends[3]} den Durchbruch den du brauchst. Das Wochenende feiert ihr zu fünft! ${userName}, das Universum hat große Pläne für dich und deine magische Crew! Diese transformative Woche gehört EUCH!`,
+      affirmation: `${userName.toUpperCase()} IST BEREIT FÜR WUNDER! ${friends.join(', ')} sind deine kosmischen Verbündeten!`
     };
 
-    let reading = `🌟 DEIN MAGISCHES WOCHENHOROSKOP 🌟\n\n`;
-    reading += `${cardInfo.symbol} - ${mainCard} ENERGIE!\n\n`;
+    let reading = `🌟 ${userName.toUpperCase()}S MAGISCHES WOCHENHOROSKOP 🌟\n\n`;
+    reading += `${cardInfo.symbol} - ${mainCard} ENERGIE FÜR ${userName.toUpperCase()}!\n\n`;
     reading += `${cardInfo.weekly}\n\n`;
-    reading += `⚡ POWER-AFFIRMATION DER WOCHE:\n`;
+    reading += `⚡ ${userName.toUpperCase()}S POWER-AFFIRMATION DER WOCHE:\n`;
     reading += `${cardInfo.affirmation}\n\n`;
 
     if (cards.length > 1) {
-      reading += `BONUS-ENERGIEN: `;
+      reading += `BONUS-ENERGIEN für ${userName} und Freunde: `;
       for (let i = 1; i < Math.min(cards.length, 3); i++) {
-        reading += `${cards[i]} verstärkt deine Power! `;
+        reading += `${cards[i]} verstärkt eure magische Power! `;
       }
       reading += `\n\n`;
     }
 
-    reading += `REMEMBER: Du bist ein MAGNET für Wunder! Diese Woche gehört DIR! 🚀✨`;
+    reading += `REMEMBER ${userName}: Du und ${friends[0]}, ${friends[1]}, ${friends[2]}, ${friends[3]} seid ein unschlagbares Team! Diese Woche gehört EUCH! 🚀✨`;
 
     return reading;
   }
@@ -192,7 +195,7 @@ class VoiceTarotService {
   /**
    * Generate dynamic spiritual weekly reading using Claude API
    */
-  async generateDynamicReading(cards) {
+  async generateDynamicReading(cards, userName = 'Lena', friends = ['Max', 'Sophie', 'Julian', 'Emma']) {
     try {
       console.log('Generating dynamic reading with Claude for cards:', cards);
 
@@ -205,29 +208,48 @@ class VoiceTarotService {
         4: 'Outcome/Rat'
       };
 
-      // Create prompt for Claude
-      const systemPrompt = `Du bist eine spirituelle Tarot-Beraterin, die warmherzige und persönliche Wochenlesungen erstellt.
-Dein Stil ist:
-- Persönlich und einfühlsam (duze den Leser)
-- Konkrete Alltagssituationen einbeziehen
-- Spirituell aber bodenständig
-- Ermutigend und positiv
-- Etwa 1800-2200 Zeichen`;
+      // Get current date for weekly reference
+      const today = new Date();
+      const weekDays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+      const currentDay = weekDays[today.getDay()];
+      const currentMonth = today.toLocaleDateString('de-DE', { month: 'long' });
 
-      const userPrompt = `Erstelle eine spirituelle Wochenlesung für diese 5 Katzen-Tarot-Karten:
+      // Assign magical roles to friends
+      const friendRoles = {
+        [friends[0]]: 'dein kosmischer Wegweiser',
+        [friends[1]]: 'deine spirituelle Spiegelseele',
+        [friends[2]]: 'dein Energieverstärker',
+        [friends[3]]: 'dein Glücksbote'
+      };
+
+      // Create prompt for Claude
+      const systemPrompt = `Du bist eine spirituelle Tarot-Beraterin, die SEHR persönliche Wochenlesungen für ${userName} erstellt.
+WICHTIG:
+- Sprich ${userName} DIREKT mit Namen an (mindestens 3-4 mal in der Lesung)
+- Erwähne ihre Freunde ${friends.join(', ')} mit ihren magischen Rollen
+- Beziehe dich auf DIESE KONKRETE Woche im ${currentMonth} (heute ist ${currentDay})
+- Nenne konkrete Wochentage für Ereignisse
+- Sei sehr persönlich und detailliert
+- Etwa 2000-2500 Zeichen`;
+
+      const userPrompt = `Erstelle eine SEHR persönliche Wochenlesung für ${userName} mit diesen 5 Katzen-Tarot-Karten:
 
 ${cards.map((card, i) => `${positions[i]}: ${card}`).join('\n')}
 
-Schreibe eine zusammenhängende, fließende Lesung (keine Aufzählungen), die:
-1. Die spirituelle Bedeutung der Kartenkombination erklärt
-2. Konkrete Alltagssituationen und Begegnungen für diese Woche beschreibt
-3. Auf mögliche zwischenmenschliche Begegnungen eingeht
-4. Spirituelle Synchronizitäten und Zeichen erwähnt
-5. Praktische spirituelle Tipps gibt
+${userName}s magische Begleiter diese Woche:
+${Object.entries(friendRoles).map(([friend, role]) => `- ${friend} als ${role}`).join('\n')}
 
-Beginne mit: "Diese Woche" und schreibe in einem warmen, persönlichen Ton.
-Verwende konkrete Beispiele wie Begegnungen im Café, Gespräche mit Fremden, überraschende Anrufe, etc.
-Länge: 1800-2200 Zeichen.`;
+Schreibe eine fließende, persönliche Lesung die:
+1. ${userName} direkt anspricht (verwende den Namen oft!)
+2. Konkrete Tage dieser Woche nennt (z.B. "Am Mittwoch wird ${friends[0]} als dein kosmischer Wegweiser...")
+3. Die Freunde in magischen Rollen einbaut (z.B. "${friends[1]} wird als deine Spiegelseele am Donnerstag...")
+4. Sich auf DIESE spezifische Woche bezieht (nicht allgemein)
+5. Konkrete Orte und Situationen nennt (Lieblingscafé, Arbeit, Supermarkt, WhatsApp-Nachricht)
+6. Überraschende Wendungen mit den Freunden beschreibt
+
+Beginne mit: "Liebe ${userName}, diese Woche im ${currentMonth}" und baue die Freunde natürlich in die Geschichte ein.
+Die Freunde sollen als magische Helfer auftreten, die ${userName} durch die Woche begleiten.
+Länge: 2000-2500 Zeichen.`;
 
       const response = await axios.post(
         'https://api.anthropic.com/v1/messages',
