@@ -75,6 +75,17 @@ app.post('/webhook', express.raw({ type: 'application/json' }), async (req, res)
 });
 
 // Claude Vision card analysis endpoint with retry mechanism
+// Debug endpoint to check environment
+app.get('/debug-env', (req, res) => {
+  res.json({
+    hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
+    keyLength: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0,
+    keyPrefix: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.substring(0, 10) + '...' : 'NOT SET',
+    hasFalKey: !!process.env.FAL_API_KEY,
+    nodeEnv: process.env.NODE_ENV
+  });
+});
+
 app.post('/analyze-card', async (req, res) => {
   try {
     const { imageBase64, mode = 'single' } = req.body; // mode: 'single' or 'multiple'
