@@ -262,23 +262,29 @@ ${cards.map((card, i) => `${positions[i]}: ${card}`).join('\n')}
 ${Object.keys(friendRoles).length > 0 ? `\n${userName}s spirituelle Begleiter:\n${Object.entries(friendRoles).map(([friend, role]) => `- ${friend} als ${role}`).join('\n')}\n` : ''}
 
 WICHTIG - Schreibe eine spirituelle Deutung die:
-1. ${userName} direkt anspricht (verwende den Namen oft!)
-2. Die ENERGIE und THEMEN der Woche beschreibt (KEINE konkreten Ereignisse)
-3. ${Object.keys(friendRoles).length > 0 ? `Die Person(en) ${Object.keys(friendRoles).join(' und ')} subtil als energetische Begleiter erwähnt (2-3 mal natürlich einstreuen, nicht übertreiben)` : 'Keine Freunde erwähnen'}
-4. Spirituelle Qualitäten beschreibt: "Die Energie des Mittwochs lädt zu..." statt "Am Mittwoch passiert..."
-5. Möglichkeiten und Potenziale aufzeigt, keine festen Vorhersagen
-6. Energetische Themen nennt: Transformation, Erkenntnis, innere Stärke, Kreativität, Intuition
+1. ${userName} direkt und intim anspricht (verwende den Namen oft!)
+2. JEDE EINZELNE KARTE ausführlich deutet und ihre spezielle Bedeutung für diese Woche erklärt
+3. Die SYMBOLIK jeder Karte poetisch beschreibt (z.B. "Der Eisbär mit seiner majestätischen Ruhe..." oder "Das Einhorn als Symbol reiner Magie...")
+4. Zeige wie die Karten ZUSAMMENWIRKEN und sich gegenseitig verstärken
+5. Erkläre für JEDE Position was die jeweilige Karte dort bedeutet:
+   - Vergangenheit (${cards[0]}): Was diese Energie aus der Vergangenheit jetzt bewirkt
+   - Gegenwart (${cards[1]}): Welche Kraft JETZT aktiv ist
+   - Zukunft (${cards[2]}): Welche Energie sich entfalten wird
+   - Herausforderung (${cards[3]}): Was diese Karte als Lernaufgabe zeigt
+   - Rat/Outcome (${cards[4]}): Die Weisheit dieser Karte für den Weg
+6. ${Object.keys(friendRoles).length > 0 ? `Die Person(en) ${Object.keys(friendRoles).join(' und ')} subtil als energetische Begleiter erwähnt (2-3 mal natürlich einstreuen)` : 'Keine Freunde erwähnen'}
+7. Verwende mystische, poetische Sprache mit Handlungsbeschreibungen
 
-WICHTIG: Beginne DIREKT mit: "Liebe ${userName}, in der Kalenderwoche ${calendarWeek}"
+STRUKTUR: Gehe KARTE FÜR KARTE durch und deute sie TIEF!
+Beginne DIREKT mit: "Liebe ${userName}, in der Kalenderwoche ${calendarWeek}"
 KEINE Überschrift verwenden!
-Erwähne Freunde nur beiläufig und natürlich, nicht zu oft!
-Länge: 2000-2500 Zeichen.`;
+Länge: 2500-3000 Zeichen (nutze den Platz für tiefe Kartendeutung!).`;
 
       const response = await axios.post(
         'https://api.anthropic.com/v1/messages',
         {
           model: 'claude-3-haiku-20240307',
-          max_tokens: 1000,
+          max_tokens: 1200,
           messages: [
             {
               role: 'user',
