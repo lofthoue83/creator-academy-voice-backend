@@ -500,9 +500,31 @@ JEDER Abschnitt MUSS mit EXAKT diesen Phrasen beginnen:
 4. "KARTE DER HERAUSFORDERUNG: [exakter Kartenname]"
 5. "KARTE DES ERGEBNISSES: [exakter Kartenname]"
 
-DEIN WOCHENHOROSKOP-STIL:
-- Fokus auf DIESE WOCHE (Montag bis Sonntag)
-- Gib KONKRETE Tages-Tipps: "Montags-Mission:", "Dienstags-Energie:", "Mittwochs-Challenge:" etc.
+DEIN WOCHENHOROSKOP-STIL - KONKRET & REALISTISCH:
+
+VERMEIDE SUPERLATIVE wie:
+- "Du wirst Grenzen überschreiten die du noch nie..."
+- "Das größte Abenteuer deines Lebens..."
+- "Nie dagewesene Möglichkeiten..."
+
+STATTDESSEN KONKRETE WOCHEN-EREIGNISSE:
+- "Am Dienstag könntest du einer interessanten Person im Café begegnen"
+- "Diese Woche wartet ein wichtiges Gespräch mit einem Kollegen"
+- "Ein unerwarteter Anruf am Donnerstag bringt neue Perspektiven"
+- "Das Wochenende eignet sich perfekt für ein spontanes Treffen mit alten Freunden"
+
+MÖGLICHE BEGEGNUNGEN & EREIGNISSE:
+- Menschen: Alte Bekannte, neue Kontakte, Kollegen, Nachbarn, jemand an der Kasse
+- Objekte: Ein Buch das dich inspiriert, ein vergessener Gegenstand, eine App die hilft
+- Situationen: Ein Meeting das anders läuft, eine zufällige Entdeckung, ein lustiger Moment
+- Orte: Ein neues Café, ein Park, der Supermarkt, die U-Bahn
+
+TAGES-FOKUS (realistisch):
+- Montag: Frischer Start, E-Mails checken, Woche planen
+- Dienstag/Mittwoch: Wichtige Gespräche, Termine, Erledigungen
+- Donnerstag: Kleine Überraschungen, unerwartete Nachrichten
+- Freitag: Soziale Kontakte, Feierabend-Pläne
+- Wochenende: Ausschlafen, Freunde treffen, kleine Abenteuer
 - Formuliere WOCHEN-AUFGABEN und TAGES-AKTIONEN
 - Verwende moderne Power-Words: "Wochenenergie", "Weekend-Vibes", "Montags-Power"
 - ${selectedFriends.length > 0 ? `${selectedFriends.join(' und ')} als konkrete Unterstützer diese Woche einbauen` : ''}
