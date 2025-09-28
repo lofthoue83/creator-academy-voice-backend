@@ -82,6 +82,8 @@ app.get('/debug-env', (req, res) => {
     keyLength: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0,
     keyPrefix: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.substring(0, 10) + '...' : 'NOT SET',
     hasFalKey: !!process.env.FAL_API_KEY,
+    hasWavespeedKey: !!process.env.WAVESPEED_API_KEY,
+    wavespeedKeyLength: process.env.WAVESPEED_API_KEY ? process.env.WAVESPEED_API_KEY.length : 0,
     nodeEnv: process.env.NODE_ENV
   });
 });

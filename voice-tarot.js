@@ -49,13 +49,10 @@ class VoiceTarotService {
         {
           text: textToSpeak,
           voice_id: "Tilda-001",  // Custom cloned grandmother voice
-          audio_setting: {
-            sample_rate: 32000,
-            bitrate: 128000,
-            format: "mp3",
-            channel: 2
-          },
-          output_format: "url"
+          speed: 0.95,  // Slightly slower for mystical effect
+          volume: 1,
+          pitch: 0,
+          emotion: "neutral"
         },
         {
           headers: {
@@ -67,15 +64,15 @@ class VoiceTarotService {
 
       const result = wavespeedResponse.data;
 
-      console.log('WaveSpeed response received');
+      console.log('WaveSpeed response received:', JSON.stringify(result, null, 2).substring(0, 500));
 
-      // Check if we got audio URL from WaveSpeed
-      if (result && result.audio_url) {
+      // Check if we got audio URL from WaveSpeed - response has "outputs" array
+      if (result && result.outputs && result.outputs.length > 0) {
         return {
-          audioUrl: result.audio_url,
+          audioUrl: result.outputs[0],  // URL is in outputs array
           text: prompt,
-          duration: result.duration || 30,
-          jobId: result.request_id || 'wavespeed-job'
+          duration: 30,  // Default duration
+          jobId: result.id || 'wavespeed-job'
         };
       }
 
