@@ -276,9 +276,9 @@ class VoiceTarotService {
 
         // Debug info for Xcode console
         debug: {
-          claudeRequest: userPrompt,
+          claudeRequest: `Cards: ${cards.join(', ')}`,
           claudeResponse: fullText,
-          systemPrompt: systemPrompt.substring(0, 300) + '...'
+          systemPrompt: 'Mystical tarot reading system'
         }
       };
 
