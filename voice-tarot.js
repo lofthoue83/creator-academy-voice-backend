@@ -15,39 +15,78 @@ class VoiceTarotService {
   }
 
   /**
-   * Generate voice tarot reading from detected cards
-   * @param {Array} cards - Array of detected card names
-   * @param {String} spreadType - Type of tarot spread (cross, three-card, etc)
-   * @param {String} voiceStyle - Voice style (mystical, calm, energetic)
-   * @returns {Object} Audio stream and text
+   * Split text into segments at natural sentence boundaries
    */
-  async generateVoiceReading(cards, spreadType = 'three-card', voiceStyle = 'mystical', personalization = {}) {
-    try {
-      // Extract personalization data
-      const { userName = 'Lena', friends = ['Max', 'Sophie', 'Julian', 'Emma'] } = personalization;
+  splitTextIntoSegments(text, maxLength = 1400) {
+    const segments = [];
+    let currentSegment = '';
 
-      // Generate dynamic text with Claude API if we have 5 cards
-      let prompt;
-      if (cards.length >= 5 && ANTHROPIC_API_KEY) {
-        prompt = await this.generateDynamicReading(cards, userName, friends);
+    // Split by sentences (periods followed by space or end)
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+
+    for (const sentence of sentences) {
+      // If adding this sentence would exceed limit, start new segment
+      if (currentSegment.length + sentence.length > maxLength && currentSegment.length > 0) {
+        segments.push(currentSegment.trim());
+        currentSegment = sentence;
       } else {
-        // Fallback to static prompt with personalization
-        prompt = this.createTarotPrompt(cards, spreadType, userName, friends);
+        currentSegment += sentence;
+      }
+    }
+
+    // Add last segment if not empty
+    if (currentSegment.trim()) {
+      segments.push(currentSegment.trim());
+    }
+
+    // Ensure we have exactly 3 segments if text is long enough
+    if (segments.length > 3) {
+      // Merge segments to get exactly 3
+      const threeSegments = [];
+      const segmentSize = Math.ceil(segments.length / 3);
+      for (let i = 0; i < 3; i++) {
+        const start = i * segmentSize;
+        const end = Math.min(start + segmentSize, segments.length);
+        threeSegments.push(segments.slice(start, end).join(' '));
+      }
+      return threeSegments;
+    } else if (segments.length < 3 && text.length > 2000) {
+      // If we have fewer than 3 but text is long, split more evenly
+      const targetLength = Math.ceil(text.length / 3);
+      const threeSegments = [];
+      let startIndex = 0;
+
+      for (let i = 0; i < 3; i++) {
+        const endIndex = Math.min(startIndex + targetLength, text.length);
+        const segment = text.substring(startIndex, endIndex);
+        // Find last sentence boundary
+        const lastPeriod = segment.lastIndexOf('.');
+        if (lastPeriod > 0 && i < 2) {
+          threeSegments.push(text.substring(startIndex, startIndex + lastPeriod + 1).trim());
+          startIndex = startIndex + lastPeriod + 1;
+        } else {
+          threeSegments.push(segment.trim());
+          startIndex = endIndex;
+        }
       }
 
-      console.log('Generating voice with fal.ai MiniMax Speech-02 HD...');
-      console.log('Text length:', prompt.length, 'characters');
+      return threeSegments.filter(s => s.length > 0);
+    }
 
-      // Limit to 1500 characters for WaveSpeed (seems to be their limit)
-      const textToSpeak = prompt.substring(0, 1500);
+    return segments;
+  }
 
-      // Use WaveSpeed API directly with custom cloned voice
-      console.log('Calling WaveSpeed API with Tilda-001 voice...');
+  /**
+   * Generate audio for a single text segment
+   */
+  async generateSegmentAudio(text, segmentIndex) {
+    try {
+      console.log(`Generating audio for segment ${segmentIndex + 1}, length: ${text.length} chars`);
 
       const wavespeedResponse = await axios.post(
         this.wavespeedEndpoint,
         {
-          text: textToSpeak,
+          text: text,
           voice_id: "Tilda-001",  // Custom cloned grandmother voice
           speed: 0.9,  // Slower for clearer speech
           volume: 0.95,
@@ -68,7 +107,6 @@ class VoiceTarotService {
       );
 
       let result = wavespeedResponse.data;
-      console.log('WaveSpeed initial response:', JSON.stringify(result, null, 2).substring(0, 500));
 
       // If response has data wrapper, extract it
       if (result.data) {
@@ -77,7 +115,7 @@ class VoiceTarotService {
 
       // Poll for result if status is "created" or "processing"
       if (result.id && result.urls && result.urls.get) {
-        console.log('Polling for result...');
+        console.log(`Polling for segment ${segmentIndex + 1} result...`);
         let attempts = 0;
         const maxAttempts = 30; // 30 seconds max wait
 
@@ -94,18 +132,16 @@ class VoiceTarotService {
           );
 
           const pollResult = pollResponse.data.data || pollResponse.data;
-          console.log(`Poll attempt ${attempts + 1}: Status = ${pollResult.status}`);
 
           if (pollResult.status === 'completed' && pollResult.outputs && pollResult.outputs.length > 0) {
             return {
               audioUrl: pollResult.outputs[0],
-              text: prompt,
-              duration: 30,
+              text: text,
               jobId: result.id
             };
           } else if (pollResult.status === 'failed' || pollResult.status === 'error') {
-            console.error('WaveSpeed generation failed:', pollResult.error);
-            break;
+            console.error(`Segment ${segmentIndex + 1} generation failed:`, pollResult.error);
+            return null;
           }
 
           attempts++;
@@ -116,19 +152,69 @@ class VoiceTarotService {
       if (result && result.outputs && result.outputs.length > 0) {
         return {
           audioUrl: result.outputs[0],
-          text: prompt,
-          duration: 30,
+          text: text,
           jobId: result.id || 'wavespeed-job'
         };
       }
 
-      // Fallback to text-only
+      return null;
+    } catch (error) {
+      console.error(`Error generating segment ${segmentIndex + 1}:`, error.message);
+      return null;
+    }
+  }
+
+  /**
+   * Generate voice tarot reading from detected cards
+   * @param {Array} cards - Array of detected card names
+   * @param {String} spreadType - Type of tarot spread (cross, three-card, etc)
+   * @param {String} voiceStyle - Voice style (mystical, calm, energetic)
+   * @returns {Object} Audio segments and text
+   */
+  async generateVoiceReading(cards, spreadType = 'three-card', voiceStyle = 'mystical', personalization = {}) {
+    try {
+      // Extract personalization data
+      const { userName = 'Lena', friends = ['Max', 'Sophie', 'Julian', 'Emma'] } = personalization;
+
+      // Generate dynamic text with Claude API if we have 5 cards
+      let fullText;
+      if (cards.length >= 5 && ANTHROPIC_API_KEY) {
+        fullText = await this.generateDynamicReading(cards, userName, friends);
+      } else {
+        // Fallback to static prompt with personalization
+        fullText = this.createTarotPrompt(cards, spreadType, userName, friends);
+      }
+
+      console.log('Full reading text length:', fullText.length, 'characters');
+
+      // Split text into segments
+      const textSegments = this.splitTextIntoSegments(fullText, 1400);
+      console.log(`Split into ${textSegments.length} segments`);
+
+      // Generate audio for first segment immediately
+      const firstSegmentAudio = await this.generateSegmentAudio(textSegments[0], 0);
+
+      // Prepare response with segments
+      const segments = textSegments.map((text, index) => ({
+        index: index,
+        text: text,
+        audioUrl: index === 0 ? firstSegmentAudio?.audioUrl : null,
+        generated: index === 0
+      }));
+
       return {
-        audioUrl: null,
-        text: prompt,
+        // Keep backward compatibility
+        audioUrl: firstSegmentAudio?.audioUrl,
+        text: fullText,
+
+        // New segmented structure
+        segments: segments,
+        totalSegments: segments.length,
+        currentSegment: 0,
+
+        // Metadata
         duration: 30,
-        jobId: 'fallback',
-        message: 'Audio konnte nicht generiert werden. Hier ist der Text deiner Lesung:'
+        jobId: firstSegmentAudio?.jobId || 'segmented-reading'
       };
 
     } catch (error) {
@@ -144,10 +230,36 @@ class VoiceTarotService {
       return {
         audioUrl: null,
         text: this.createTarotPrompt(cards, spreadType),
+        segments: [{
+          index: 0,
+          text: this.createTarotPrompt(cards, spreadType),
+          audioUrl: null,
+          generated: false
+        }],
         duration: 30,
         jobId: 'error',
         message: 'Audio konnte nicht generiert werden. Hier ist der Text deiner Lesung:',
         debugError: error.message
+      };
+    }
+  }
+
+  /**
+   * Generate audio for next segment
+   */
+  async generateNextSegment(segmentIndex, text) {
+    try {
+      const audio = await this.generateSegmentAudio(text, segmentIndex);
+      return {
+        success: true,
+        audioUrl: audio?.audioUrl,
+        jobId: audio?.jobId
+      };
+    } catch (error) {
+      console.error('Error generating next segment:', error);
+      return {
+        success: false,
+        error: error.message
       };
     }
   }

@@ -357,6 +357,36 @@ app.post('/generate-voice-reading', async (req, res) => {
   }
 });
 
+// Generate next segment endpoint
+app.post('/generate-next-segment', async (req, res) => {
+  try {
+    const { segmentIndex, text } = req.body;
+
+    if (segmentIndex === undefined || !text) {
+      return res.status(400).json({
+        error: 'Missing segmentIndex or text'
+      });
+    }
+
+    const result = await voiceTarot.generateNextSegment(segmentIndex, text);
+
+    res.json({
+      success: result.success,
+      audioUrl: result.audioUrl,
+      jobId: result.jobId,
+      error: result.error
+    });
+
+  } catch (error) {
+    console.error('Segment generation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate segment',
+      details: error.message
+    });
+  }
+});
+
 // Stream audio endpoint
 app.get('/stream-audio/:jobId', async (req, res) => {
   try {
