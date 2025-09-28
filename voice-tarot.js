@@ -272,7 +272,14 @@ class VoiceTarotService {
 
         // Metadata
         duration: 30,
-        jobId: 'card-by-card-reading'
+        jobId: 'card-by-card-reading',
+
+        // Debug info for Xcode console
+        debug: {
+          claudeRequest: prompt,
+          claudeResponse: fullText,
+          systemPrompt: systemPrompt.substring(0, 300) + '...'
+        }
       };
 
     } catch (error) {
