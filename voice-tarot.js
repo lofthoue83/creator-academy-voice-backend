@@ -276,7 +276,7 @@ class VoiceTarotService {
 
         // Debug info for Xcode console
         debug: {
-          claudeRequest: prompt,
+          claudeRequest: userPrompt,
           claudeResponse: fullText,
           systemPrompt: systemPrompt.substring(0, 300) + '...'
         }
@@ -305,7 +305,8 @@ class VoiceTarotService {
         duration: 30,
         jobId: 'error',
         message: 'Audio konnte nicht generiert werden.',
-        debugError: error.message
+        debugError: error.message,
+        success: true
       };
     }
   }
