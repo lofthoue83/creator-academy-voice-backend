@@ -38,8 +38,8 @@ class VoiceTarotService {
       console.log('Generating voice with fal.ai MiniMax Speech-02 HD...');
       console.log('Text length:', prompt.length, 'characters');
 
-      // Limit to 5000 characters for fal.ai
-      const textToSpeak = prompt.substring(0, 5000);
+      // Limit to 1500 characters for WaveSpeed (seems to be their limit)
+      const textToSpeak = prompt.substring(0, 1500);
 
       // Use WaveSpeed API directly with custom cloned voice
       console.log('Calling WaveSpeed API with Tilda-001 voice...');
@@ -49,10 +49,15 @@ class VoiceTarotService {
         {
           text: textToSpeak,
           voice_id: "Tilda-001",  // Custom cloned grandmother voice
-          speed: 0.95,  // Slightly slower for mystical effect
-          volume: 1,
-          pitch: 0,
-          emotion: "neutral"
+          speed: 0.9,  // Slower for clearer speech
+          volume: 0.95,
+          pitch: -1,  // Slightly deeper
+          emotion: "neutral",
+          // Remove reverb/echo effects
+          audio_setting: {
+            reverb_level: 0,  // No reverb/hall effect
+            noise_reduction: true
+          }
         },
         {
           headers: {
