@@ -542,7 +542,7 @@ Gesamt: 2000-2500 Zeichen.`;
       const response = await axios.post(
         'https://api.anthropic.com/v1/messages',
         {
-          model: 'claude-3-5-sonnet-20241022',
+          model: 'claude-3-haiku-20240307',  // Fallback to haiku - sonnet might not be available
           max_tokens: 2500,
           messages: [
             {
