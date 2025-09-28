@@ -186,27 +186,39 @@ class VoiceTarotService {
         'KARTE DES ERGEBNISSES:'
       ];
 
-      let textSegments = [fullReadingText];
+      // Find and extract segments for each position marker
+      const extractedSegments = [];
+      let remainingText = fullReadingText;
 
-      // Split by each position marker
-      for (const marker of positionMarkers) {
-        let newSegments = [];
-        for (const segment of textSegments) {
-          const parts = segment.split(marker);
-          if (parts.length > 1) {
-            newSegments.push(parts[0]);
-            for (let i = 1; i < parts.length; i++) {
-              newSegments.push(marker + parts[i]);
+      for (let i = 0; i < positionMarkers.length; i++) {
+        const currentMarker = positionMarkers[i];
+        const nextMarker = i < positionMarkers.length - 1 ? positionMarkers[i + 1] : null;
+
+        const markerIndex = remainingText.indexOf(currentMarker);
+        if (markerIndex !== -1) {
+          // Found the marker
+          let segmentText;
+          if (nextMarker) {
+            const nextIndex = remainingText.indexOf(nextMarker, markerIndex + currentMarker.length);
+            if (nextIndex !== -1) {
+              // Extract text from current marker to next marker
+              segmentText = remainingText.substring(markerIndex, nextIndex).trim();
+            } else {
+              // Next marker not found, take everything from current marker
+              segmentText = remainingText.substring(markerIndex).trim();
             }
           } else {
-            newSegments.push(segment);
+            // Last marker, take everything remaining
+            segmentText = remainingText.substring(markerIndex).trim();
           }
+          extractedSegments.push(segmentText);
+          // Update remaining text for next iteration
+          remainingText = remainingText.substring(markerIndex + currentMarker.length);
         }
-        textSegments = newSegments;
       }
 
-      // Remove empty segments and trim
-      textSegments = textSegments.filter(s => s.trim()).map(s => s.trim());
+      // Use extracted segments, filtering out any empty ones
+      let textSegments = extractedSegments.filter(s => s && s.trim().length > 0);
       console.log(`Split text into ${textSegments.length} segments by position markers`);
 
       // Create card segments from split text
@@ -490,9 +502,9 @@ JEDER Abschnitt MUSS mit EXAKT diesen Phrasen beginnen:
 KEINE anderen Formulierungen! EXAKT diese Marker verwenden!
 
 Dein Stil:
-- SEHR persönlich und intim - sprich ${userName} als "meine Liebe", "meine Muse" an
+- SEHR persönlich und intim - sprich ${userName} direkt an
 - Verwende bildhafte, poetische Sprache
-- Beschreibe Handlungen: "(lehne mich vor)", "(streiche sanft über die Karte)"
+- KEINE theatralischen Handlungsbeschreibungen wie "*lehne mich vor*" oder "*mische Karten*"
 - ${selectedFriends.length > 0 ? `Erwähne ${selectedFriends.join(' und ')} poetisch als "Seelengefährten"` : ''}
 - Etwa 400-500 Zeichen PRO Position`;
 
@@ -515,6 +527,8 @@ Du MUSST diese EXAKTE Struktur verwenden:
 KEINE anderen Einleitungen!
 BEGINNE JEDEN Abschnitt mit "KARTE DER [POSITION]:"!
 Das ist der TRIGGER für den Kartenwechsel!
+
+KEINE Einleitung vor der ersten Karte! Beginne DIREKT mit "KARTE DER VERGANGENHEIT:"!
 
 WICHTIG - Schreibe eine spirituelle Deutung die:
 1. ${userName} direkt und intim anspricht (verwende den Namen oft!)
