@@ -74,6 +74,20 @@ app.post('/webhook', express.raw({ type: 'application/json' }), async (req, res)
   res.json({ received: true });
 });
 
+// Voice Tarot endpoint
+app.post('/api/voice-tarot', async (req, res) => {
+  try {
+    const result = await voiceTarot.generateVoiceReading(req.body);
+    res.json(result);
+  } catch (error) {
+    console.error('Voice tarot error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+});
+
 // Claude Vision card analysis endpoint with retry mechanism
 // Debug endpoint to check environment
 app.get('/debug-env', (req, res) => {
