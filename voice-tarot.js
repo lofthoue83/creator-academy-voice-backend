@@ -46,13 +46,11 @@ class VoiceTarotService {
       // Limit to 5000 characters for fal.ai
       const textToSpeak = prompt.substring(0, 5000);
 
-      // Use fal.ai to generate speech with personalized voice
+      // Use fal.ai to generate speech with custom cloned voice
       const result = await fal.subscribe(this.modelId, {
         input: {
           text: textToSpeak,
-          voice_design: {
-            prompt: "A wise, warm elderly woman in her late 60s with a gentle, mystical voice. She speaks like a loving grandmother who has deep spiritual wisdom and reads tarot cards. Her voice is soothing, slightly raspy with age, full of warmth and mystery. She speaks slowly and thoughtfully, with a slight German accent, as if she's revealing ancient secrets. Her tone is intimate and personal, like she's speaking directly to her beloved grandchild about the mysteries of the universe."
-          },
+          voice_id: "Tilda-001",  // Custom cloned grandmother voice
           audio_setting: {
             sample_rate: 32000,    // Must be integer from allowed values
             bitrate: 128000,       // Must be integer from allowed values
