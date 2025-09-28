@@ -62,16 +62,57 @@ class VoiceTarotService {
         }
       );
 
-      const result = wavespeedResponse.data;
+      let result = wavespeedResponse.data;
+      console.log('WaveSpeed initial response:', JSON.stringify(result, null, 2).substring(0, 500));
 
-      console.log('WaveSpeed response received:', JSON.stringify(result, null, 2).substring(0, 500));
+      // If response has data wrapper, extract it
+      if (result.data) {
+        result = result.data;
+      }
 
-      // Check if we got audio URL from WaveSpeed - response has "outputs" array
+      // Poll for result if status is "created" or "processing"
+      if (result.id && result.urls && result.urls.get) {
+        console.log('Polling for result...');
+        let attempts = 0;
+        const maxAttempts = 30; // 30 seconds max wait
+
+        while (attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+
+          const pollResponse = await axios.get(
+            result.urls.get,
+            {
+              headers: {
+                'Authorization': `Bearer ${WAVESPEED_API_KEY}`
+              }
+            }
+          );
+
+          const pollResult = pollResponse.data.data || pollResponse.data;
+          console.log(`Poll attempt ${attempts + 1}: Status = ${pollResult.status}`);
+
+          if (pollResult.status === 'completed' && pollResult.outputs && pollResult.outputs.length > 0) {
+            return {
+              audioUrl: pollResult.outputs[0],
+              text: prompt,
+              duration: 30,
+              jobId: result.id
+            };
+          } else if (pollResult.status === 'failed' || pollResult.status === 'error') {
+            console.error('WaveSpeed generation failed:', pollResult.error);
+            break;
+          }
+
+          attempts++;
+        }
+      }
+
+      // Direct response check (if not async)
       if (result && result.outputs && result.outputs.length > 0) {
         return {
-          audioUrl: result.outputs[0],  // URL is in outputs array
+          audioUrl: result.outputs[0],
           text: prompt,
-          duration: 30,  // Default duration
+          duration: 30,
           jobId: result.id || 'wavespeed-job'
         };
       }
