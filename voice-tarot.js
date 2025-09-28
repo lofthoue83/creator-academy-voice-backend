@@ -1,14 +1,9 @@
-const { fal } = require('@fal-ai/client');
 const axios = require('axios');
 
-// Configure fal.ai API key - only use FAL_API_KEY, not RUNPOD
-const FAL_API_KEY = process.env.FAL_API_KEY;
-if (FAL_API_KEY) {
-  fal.config({
-    credentials: FAL_API_KEY
-  });
-} else {
-  console.error('FAL_API_KEY is not set!');
+// WaveSpeed API key for TTS
+const WAVESPEED_API_KEY = process.env.WAVESPEED_API_KEY;
+if (!WAVESPEED_API_KEY) {
+  console.error('WAVESPEED_API_KEY is not set!');
 }
 
 // Claude API key for dynamic text generation
@@ -16,7 +11,7 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
 class VoiceTarotService {
   constructor() {
-    this.modelId = 'fal-ai/minimax/speech-02-hd';
+    this.wavespeedEndpoint = 'https://api.wavespeed.ai/api/v3/minimax/speech-02-hd';
   }
 
   /**
@@ -46,36 +41,41 @@ class VoiceTarotService {
       // Limit to 5000 characters for fal.ai
       const textToSpeak = prompt.substring(0, 5000);
 
-      // Use fal.ai to generate speech with custom cloned voice
-      const result = await fal.subscribe(this.modelId, {
-        input: {
+      // Use WaveSpeed API directly with custom cloned voice
+      console.log('Calling WaveSpeed API with Tilda-001 voice...');
+
+      const wavespeedResponse = await axios.post(
+        this.wavespeedEndpoint,
+        {
           text: textToSpeak,
-          voice_id: "Wise_Woman",  // System voice for wise elderly woman
+          voice_id: "Tilda-001",  // Custom cloned grandmother voice
           audio_setting: {
-            sample_rate: 32000,    // Must be integer from allowed values
-            bitrate: 128000,       // Must be integer from allowed values
+            sample_rate: 32000,
+            bitrate: 128000,
             format: "mp3",
-            channel: 2             // Must be integer (1 or 2)
+            channel: 2
           },
-          output_format: "url"     // Get URL instead of hex
+          output_format: "url"
         },
-        logs: true,
-        onQueueUpdate: (update) => {
-          if (update.status === 'IN_PROGRESS') {
-            console.log('Generating audio...');
+        {
+          headers: {
+            'Authorization': `Bearer ${WAVESPEED_API_KEY}`,
+            'Content-Type': 'application/json'
           }
         }
-      });
+      );
 
-      console.log('fal.ai response received');
+      const result = wavespeedResponse.data;
 
-      // Check if we got audio - fal.ai returns nested structure
-      if (result && result.data && result.data.audio && result.data.audio.url) {
+      console.log('WaveSpeed response received');
+
+      // Check if we got audio URL from WaveSpeed
+      if (result && result.audio_url) {
         return {
-          audioUrl: result.data.audio.url,
+          audioUrl: result.audio_url,
           text: prompt,
-          duration: result.data.duration_ms ? result.data.duration_ms / 1000 : 30,
-          jobId: result.requestId || 'fal-job'
+          duration: result.duration || 30,
+          jobId: result.request_id || 'wavespeed-job'
         };
       }
 
@@ -89,7 +89,7 @@ class VoiceTarotService {
       };
 
     } catch (error) {
-      console.error('fal.ai TTS error:');
+      console.error('WaveSpeed TTS error:');
       console.error('Error message:', error.message);
 
       if (error.response) {
