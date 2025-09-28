@@ -15,65 +15,41 @@ class VoiceTarotService {
   }
 
   /**
-   * Split text into segments at natural sentence boundaries
+   * Generate individual card reading for card-by-card playback
    */
-  splitTextIntoSegments(text, maxLength = 1400) {
-    const segments = [];
-    let currentSegment = '';
+  generateCardReading(card, position, userName = 'Lena') {
+    const cardReadings = {
+      // Positions for 5-card spread
+      0: `Deine Vergangenheit, ${userName}...`,
+      1: `In deiner Gegenwart zeigt sich...`,
+      2: `Die Zukunft offenbart...`,
+      3: `Deine Herausforderung ist...`,
+      4: `Der kosmische Rat lautet...`
+    };
 
-    // Split by sentences (periods followed by space or end)
-    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+    const prefix = cardReadings[position] || `Karte ${position + 1} zeigt...`;
 
-    for (const sentence of sentences) {
-      // If adding this sentence would exceed limit, start new segment
-      if (currentSegment.length + sentence.length > maxLength && currentSegment.length > 0) {
-        segments.push(currentSegment.trim());
-        currentSegment = sentence;
-      } else {
-        currentSegment += sentence;
-      }
-    }
+    // Create personalized short reading for this specific card (max 800 chars)
+    const cardMeanings = {
+      'THE FOOL': `${prefix} Der Narr tanzt in dein Leben! Eine frische Energie durchströmt dich. Du stehst am Anfang eines magischen Weges. Vertraue deiner Intuition und wage den Sprung ins Unbekannte. Das Universum fängt dich auf, ${userName}. Diese Karte ermutigt dich, mit kindlicher Neugier und offenem Herzen voranzuschreiten. Alte Muster dürfen losgelassen werden. Die Zeit ist reif für Spontanität und Abenteuer!`,
 
-    // Add last segment if not empty
-    if (currentSegment.trim()) {
-      segments.push(currentSegment.trim());
-    }
+      'THE MAGICIAN': `${prefix} Der Magier erweckt deine schöpferische Kraft! Du besitzt alle Werkzeuge, die du brauchst, ${userName}. Deine Gedanken werden zu Realität. Nutze deine Manifestationskraft weise. Diese Woche öffnen sich Türen, von denen du nur geträumt hast. Konzentriere dich auf deine Ziele und handle mit Klarheit. Die Elemente tanzen nach deinem Willen!`,
 
-    // Ensure we have exactly 3 segments if text is long enough
-    if (segments.length > 3) {
-      // Merge segments to get exactly 3
-      const threeSegments = [];
-      const segmentSize = Math.ceil(segments.length / 3);
-      for (let i = 0; i < 3; i++) {
-        const start = i * segmentSize;
-        const end = Math.min(start + segmentSize, segments.length);
-        threeSegments.push(segments.slice(start, end).join(' '));
-      }
-      return threeSegments;
-    } else if (segments.length < 3 && text.length > 2000) {
-      // If we have fewer than 3 but text is long, split more evenly
-      const targetLength = Math.ceil(text.length / 3);
-      const threeSegments = [];
-      let startIndex = 0;
+      'THE HIGH PRIESTESS': `${prefix} Die Hohepriesterin flüstert Geheimnisse! Deine Intuition ist jetzt dein mächtigster Verbündeter, ${userName}. Achte auf Träume und Synchronizitäten. Verborgenes Wissen offenbart sich dir. Meditation und Stille bringen tiefe Einsichten. Vertraue deinem inneren Wissen mehr als äußeren Ratschlägen. Die Schleier zwischen den Welten sind dünn!`,
 
-      for (let i = 0; i < 3; i++) {
-        const endIndex = Math.min(startIndex + targetLength, text.length);
-        const segment = text.substring(startIndex, endIndex);
-        // Find last sentence boundary
-        const lastPeriod = segment.lastIndexOf('.');
-        if (lastPeriod > 0 && i < 2) {
-          threeSegments.push(text.substring(startIndex, startIndex + lastPeriod + 1).trim());
-          startIndex = startIndex + lastPeriod + 1;
-        } else {
-          threeSegments.push(segment.trim());
-          startIndex = endIndex;
-        }
-      }
+      'THE EMPRESS': `${prefix} Die Kaiserin segnet dich mit Fülle! Kreativität und Wachstum blühen in deinem Leben auf, ${userName}. Nähre deine Projekte mit Liebe. Sinnlichkeit und Schönheit umgeben dich. Diese Phase bringt Fruchtbarkeit in allen Lebensbereichen. Genieße die Geschenke des Lebens und teile deinen Überfluss. Du bist ein Kanal für kosmische Abundance!`,
 
-      return threeSegments.filter(s => s.length > 0);
-    }
+      'THE EMPEROR': `${prefix} Der Kaiser verleiht dir Autorität! Übernimm die Führung in deinem Leben, ${userName}. Struktur und Disziplin sind deine Superkräfte. Setze klare Grenzen und verfolge deine Ziele mit Entschlossenheit. Diese Energie unterstützt langfristige Pläne und Stabilität. Du bist der Architekt deiner Realität. Herrsche weise über dein Reich!`,
 
-    return segments;
+      'THE ICEBEAR': `${prefix} Der Eisbär bringt stille Stärke! In der Ruhe liegt deine größte Macht, ${userName}. Wie der mächtige Eisbär navigierst du durch emotionale Gewässer mit Anmut. Diese Karte lehrt Geduld und Weisheit. Deine innere Wärme schmilzt alle Hindernisse. Vertraue deiner natürlichen Kraft und bewege dich mit bedachter Eleganz!`,
+
+      'THE UNICORN': `${prefix} Das Einhorn bringt pure Magie! Wunder manifestieren sich in deinem Leben, ${userName}. Das Unmögliche wird möglich. Deine Einzigartigkeit ist deine Superkraft. Diese mystische Energie öffnet Portale zu neuen Dimensionen. Glaube an Magie, denn du BIST die Magie! Regenbogenenergie durchströmt dein ganzes Sein!`
+    };
+
+    // Default reading for cards not explicitly defined
+    const defaultReading = `${prefix} ${card} bringt transformative Energie in dein Leben, ${userName}! Diese Karte öffnet neue Wege und Möglichkeiten. Achte auf die Zeichen des Universums. Deine Intuition führt dich zu wichtigen Erkenntnissen. Die kosmischen Kräfte arbeiten zu deinen Gunsten. Vertraue dem Prozess und lass dich von der Magie dieser Karte leiten!`;
+
+    return cardMeanings[card.toUpperCase()] || defaultReading;
   }
 
   /**
@@ -83,15 +59,20 @@ class VoiceTarotService {
     try {
       console.log(`Generating audio for segment ${segmentIndex + 1}, length: ${text.length} chars`);
 
+      // Rotate emotions for variety: surprised, happy, neutral pattern
+      const emotions = ["surprised", "happy", "neutral"];
+      const emotion = emotions[segmentIndex % emotions.length];
+      console.log(`Using emotion: ${emotion} for segment ${segmentIndex + 1}`);
+
       const wavespeedResponse = await axios.post(
         this.wavespeedEndpoint,
         {
           text: text,
           voice_id: "Tilda-001",  // Custom cloned grandmother voice
-          speed: 0.9,  // Slower for clearer speech
+          speed: 1.0,  // Normal speed
           volume: 0.95,
-          pitch: -1,  // Slightly deeper
-          emotion: "neutral",
+          pitch: 0,  // Natural pitch
+          emotion: emotion,  // Dynamic emotion changes
           // Remove reverb/echo effects
           audio_setting: {
             reverb_level: 0,  // No reverb/hall effect
@@ -165,56 +146,133 @@ class VoiceTarotService {
   }
 
   /**
-   * Generate voice tarot reading from detected cards
+   * Generate voice tarot reading from detected cards (card-by-card)
    * @param {Array} cards - Array of detected card names
    * @param {String} spreadType - Type of tarot spread (cross, three-card, etc)
    * @param {String} voiceStyle - Voice style (mystical, calm, energetic)
-   * @returns {Object} Audio segments and text
+   * @returns {Object} Audio segments per card
    */
   async generateVoiceReading(cards, spreadType = 'three-card', voiceStyle = 'mystical', personalization = {}) {
     try {
       // Extract personalization data
       const { userName = 'Lena', friends = ['Max', 'Sophie', 'Julian', 'Emma'] } = personalization;
 
-      // Generate dynamic text with Claude API if we have 5 cards
-      let fullText;
-      if (cards.length >= 5 && ANTHROPIC_API_KEY) {
-        fullText = await this.generateDynamicReading(cards, userName, friends);
+      console.log('Generating card-by-card readings for:', cards);
+
+      // First generate the full reading text from Claude
+      let fullReadingText = '';
+      if (ANTHROPIC_API_KEY) {
+        console.log('Using Claude to generate dynamic reading...');
+        fullReadingText = await this.generateDynamicReading(cards, userName, friends);
       } else {
-        // Fallback to static prompt with personalization
-        fullText = this.createTarotPrompt(cards, spreadType, userName, friends);
+        console.log('No Claude API key, using fallback reading...');
+        fullReadingText = this.createTarotPrompt(cards, spreadType, userName, friends);
       }
 
-      console.log('Full reading text length:', fullText.length, 'characters');
+      // Split the text by position markers (must match Claude's output exactly)
+      const positionMarkers = [
+        'KARTE DER VERGANGENHEIT:',
+        'KARTE DER GEGENWART:',
+        'KARTE DER ZUKUNFT:',
+        'KARTE DER HERAUSFORDERUNG:',
+        'KARTE DES ERGEBNISSES:'
+      ];
 
-      // Split text into segments
-      const textSegments = this.splitTextIntoSegments(fullText, 1400);
-      console.log(`Split into ${textSegments.length} segments`);
+      let textSegments = [fullReadingText];
 
-      // Generate audio for first segment immediately
-      const firstSegmentAudio = await this.generateSegmentAudio(textSegments[0], 0);
+      // Split by each position marker
+      for (const marker of positionMarkers) {
+        let newSegments = [];
+        for (const segment of textSegments) {
+          const parts = segment.split(marker);
+          if (parts.length > 1) {
+            newSegments.push(parts[0]);
+            for (let i = 1; i < parts.length; i++) {
+              newSegments.push(marker + parts[i]);
+            }
+          } else {
+            newSegments.push(segment);
+          }
+        }
+        textSegments = newSegments;
+      }
 
-      // Prepare response with segments
-      const segments = textSegments.map((text, index) => ({
-        index: index,
-        text: text,
-        audioUrl: index === 0 ? firstSegmentAudio?.audioUrl : null,
-        generated: index === 0
-      }));
+      // Remove empty segments and trim
+      textSegments = textSegments.filter(s => s.trim()).map(s => s.trim());
+      console.log(`Split text into ${textSegments.length} segments by position markers`);
+
+      // Create card segments from split text
+      const cardSegments = [];
+      for (let i = 0; i < Math.min(cards.length, textSegments.length); i++) {
+        const segmentText = textSegments[i].trim();
+        console.log(`Segment ${i + 1} text length: ${segmentText.length} chars`);
+
+        cardSegments.push({
+          index: i,
+          card: cards[i],
+          text: segmentText,
+          audioUrl: null,
+          generated: false
+        });
+      }
+
+      // If we have fewer segments than cards (fallback or error), use generated text
+      if (cardSegments.length < cards.length) {
+        console.log('Not enough segments from Claude, filling with generated readings...');
+        for (let i = cardSegments.length; i < cards.length; i++) {
+          const cardText = this.generateCardReading(cards[i], i, userName);
+          cardSegments.push({
+            index: i,
+            card: cards[i],
+            text: cardText,
+            audioUrl: null,
+            generated: false
+          });
+        }
+      }
+
+      // Generate audio for ALL cards upfront to avoid lazy loading issues
+      console.log('Generating audio for all 5 cards upfront...');
+
+      // Generate all audio segments in parallel for faster processing
+      const audioPromises = cardSegments.map((segment, index) => {
+        return this.generateSegmentAudio(segment.text, index)
+          .then(audio => {
+            if (audio) {
+              cardSegments[index].audioUrl = audio.audioUrl;
+              cardSegments[index].generated = true;
+              console.log(`Audio generated for card ${index + 1}: ${segment.card}`);
+            }
+            return audio;
+          })
+          .catch(error => {
+            console.error(`Failed to generate audio for card ${index + 1}:`, error);
+            return null;
+          });
+      });
+
+      // Wait for all audio generation to complete
+      const audioResults = await Promise.all(audioPromises);
+      console.log(`Successfully generated ${audioResults.filter(a => a).length} of ${cardSegments.length} audio segments`);
+
+      // Create full text for logging
+      const fullText = cardSegments.map(s => s.text).join('\n\n');
+      console.log('Total cards:', cardSegments.length);
+      console.log('First card text length:', cardSegments[0]?.text.length);
 
       return {
         // Keep backward compatibility
-        audioUrl: firstSegmentAudio?.audioUrl,
+        audioUrl: cardSegments[0]?.audioUrl,
         text: fullText,
 
-        // New segmented structure
-        segments: segments,
-        totalSegments: segments.length,
+        // Card-by-card structure
+        segments: cardSegments,
+        totalSegments: cardSegments.length,
         currentSegment: 0,
 
         // Metadata
         duration: 30,
-        jobId: firstSegmentAudio?.jobId || 'segmented-reading'
+        jobId: 'card-by-card-reading'
       };
 
     } catch (error) {
@@ -229,16 +287,17 @@ class VoiceTarotService {
       // Return text-only version on error
       return {
         audioUrl: null,
-        text: this.createTarotPrompt(cards, spreadType),
+        text: 'Audio generation failed',
         segments: [{
           index: 0,
-          text: this.createTarotPrompt(cards, spreadType),
+          card: cards[0] || 'UNKNOWN',
+          text: 'Audio konnte nicht generiert werden.',
           audioUrl: null,
           generated: false
         }],
         duration: 30,
         jobId: 'error',
-        message: 'Audio konnte nicht generiert werden. Hier ist der Text deiner Lesung:',
+        message: 'Audio konnte nicht generiert werden.',
         debugError: error.message
       };
     }
@@ -394,46 +453,90 @@ class VoiceTarotService {
         friendRoles[friend] = possibleRoles[index % possibleRoles.length];
       });
 
-      // Create prompt for Claude
-      const systemPrompt = `Du bist eine geheimnisvolle, poetische Tarot-Beraterin mit künstlerischer Seele. Dein Stil ist:
-- SEHR persönlich und intim - sprich ${userName} als "meine Liebe", "meine Muse", "meine süße Seele" an
-- Verwende bildhafte, poetische Sprache: "die Farben deiner Zukunft", "der göttliche Pinselstrich des Schicksals"
-- Beschreibe Handlungen: "(lehne mich vor)", "(streiche sanft über die Karte)", "(meine Augen leuchten)"
-- Verwende mystische Metaphern: Regen, Sterne, Leinwand des Lebens, tanzende Energien
-- Baue Spannung auf mit Phrasen wie "Ah...", "Oh, meine Liebe...", "Wie interessant..."
-- ${selectedFriends.length > 0 ? `Erwähne ${selectedFriends.join(' und ')} poetisch als "Seelengefährten", "kosmische Begleiter"` : ''}
-- Etwa 2000-2500 Zeichen`;
+      // Create prompt for Claude with POSITION-BASED markers
+      const systemPrompt = `Du bist eine geheimnisvolle, poetische Tarot-Beraterin mit künstlerischer Seele.
 
-      const userPrompt = `Erstelle eine SEHR persönliche spirituelle Wochenlesung für ${userName} mit diesen 5 Katzen-Tarot-Karten:
+🚫 ABSOLUTE VERBOTE:
+- NIEMALS "Katzen-Tarot" oder "Katzen" erwähnen!
+- KEINE erfundenen Kartennamen wie "TURM", "SCHER-PAGES" etc.
+- Verwende NUR die EXAKTEN englischen Kartennamen die dir gegeben werden!
+
+ABSOLUT KRITISCH - STRUKTUR:
+Du MUSST deine Lesung in EXAKT 5 Abschnitte unterteilen.
+JEDER Abschnitt MUSS mit EXAKT diesen Phrasen beginnen:
+
+1. "KARTE DER VERGANGENHEIT: [exakter Kartenname]"
+2. "KARTE DER GEGENWART: [exakter Kartenname]"
+3. "KARTE DER ZUKUNFT: [exakter Kartenname]"
+4. "KARTE DER HERAUSFORDERUNG: [exakter Kartenname]"
+5. "KARTE DES ERGEBNISSES: [exakter Kartenname]"
+
+KEINE anderen Formulierungen! EXAKT diese Marker verwenden!
+
+Dein Stil:
+- SEHR persönlich und intim - sprich ${userName} als "meine Liebe", "meine Muse" an
+- Verwende bildhafte, poetische Sprache
+- Beschreibe Handlungen: "(lehne mich vor)", "(streiche sanft über die Karte)"
+- ${selectedFriends.length > 0 ? `Erwähne ${selectedFriends.join(' und ')} poetisch als "Seelengefährten"` : ''}
+- Etwa 400-500 Zeichen PRO Position`;
+
+      const userPrompt = `Erstelle eine SEHR persönliche spirituelle Wochenlesung für ${userName} mit diesen 5 Tarot-Karten:
 
 ${cards.map((card, i) => `${positions[i]}: ${card}`).join('\n')}
 
 ${Object.keys(friendRoles).length > 0 ? `\n${userName}s spirituelle Begleiter:\n${Object.entries(friendRoles).map(([friend, role]) => `- ${friend} als ${role}`).join('\n')}\n` : ''}
 
+ABSOLUT KRITISCH - STRUKTUR UND POSITIONEN:
+
+Du MUSST diese EXAKTE Struktur verwenden:
+
+1. Beginne mit: "KARTE DER VERGANGENHEIT: ${cards[0]} [dann dein Text]"
+2. Dann: "KARTE DER GEGENWART: ${cards[1]} [dann dein Text]"
+3. Dann: "KARTE DER ZUKUNFT: ${cards[2]} [dann dein Text]"
+4. Dann: "KARTE DER HERAUSFORDERUNG: ${cards[3]} [dann dein Text]"
+5. Dann: "KARTE DES ERGEBNISSES: ${cards[4]} [dann dein Text]"
+
+KEINE anderen Einleitungen!
+BEGINNE JEDEN Abschnitt mit "KARTE DER [POSITION]:"!
+Das ist der TRIGGER für den Kartenwechsel!
+
 WICHTIG - Schreibe eine spirituelle Deutung die:
 1. ${userName} direkt und intim anspricht (verwende den Namen oft!)
-2. JEDE EINZELNE KARTE ausführlich deutet und ihre spezielle Bedeutung für diese Woche erklärt
-3. Die SYMBOLIK jeder Karte poetisch beschreibt (z.B. "Der Eisbär mit seiner majestätischen Ruhe..." oder "Das Einhorn als Symbol reiner Magie...")
+2. JEDE EINZELNE KARTE ausführlich deutet mit ihrem EXAKTEN ENGLISCHEN NAMEN
+3. Die SYMBOLIK jeder Karte poetisch beschreibt
 4. Zeige wie die Karten ZUSAMMENWIRKEN und sich gegenseitig verstärken
 5. Erkläre für JEDE Position was die jeweilige Karte dort bedeutet:
-   - Vergangenheit (${cards[0]}): Was diese Energie aus der Vergangenheit jetzt bewirkt
-   - Gegenwart (${cards[1]}): Welche Kraft JETZT aktiv ist
-   - Zukunft (${cards[2]}): Welche Energie sich entfalten wird
-   - Herausforderung (${cards[3]}): Was diese Karte als Lernaufgabe zeigt
-   - Rat/Outcome (${cards[4]}): Die Weisheit dieser Karte für den Weg
+   - Vergangenheit: ${cards[0]} (erwähne "THE ${cards[0]}" mindestens 2x)
+   - Gegenwart: ${cards[1]} (erwähne "THE ${cards[1]}" mindestens 2x)
+   - Zukunft: ${cards[2]} (erwähne "${cards[2]}" mindestens 2x)
+   - Herausforderung: ${cards[3]} (erwähne "${cards[3]}" mindestens 2x)
+   - Rat/Outcome: ${cards[4]} (erwähne "${cards[4]}" mindestens 2x)
 6. ${Object.keys(friendRoles).length > 0 ? `Die Person(en) ${Object.keys(friendRoles).join(' und ')} subtil als energetische Begleiter erwähnt (2-3 mal natürlich einstreuen)` : 'Keine Freunde erwähnen'}
 7. Verwende mystische, poetische Sprache mit Handlungsbeschreibungen
 
-STRUKTUR: Gehe KARTE FÜR KARTE durch und deute sie TIEF!
-Beginne DIREKT mit: "Liebe ${userName}, in der Kalenderwoche ${calendarWeek}"
-KEINE Überschrift verwenden!
-Länge: 2500-3000 Zeichen (nutze den Platz für tiefe Kartendeutung!).`;
+STRUKTUR - VERWENDE DIESE EXAKTEN PHRASEN:
+
+1. "KARTE DER VERGANGENHEIT: ${cards[0]}" - dann deine Deutung
+2. "KARTE DER GEGENWART: ${cards[1]}" - dann deine Deutung
+3. "KARTE DER ZUKUNFT: ${cards[2]}" - dann deine Deutung
+4. "KARTE DER HERAUSFORDERUNG: ${cards[3]}" - dann deine Deutung
+5. "KARTE DES ERGEBNISSES: ${cards[4]}" - dann deine Deutung
+
+JEDER Abschnitt ca. 400-500 Zeichen.
+Gesamt: 2000-2500 Zeichen.`;
+
+      // DEBUG: Log what we're actually sending to Claude
+      console.log('\n========= DEBUG CLAUDE API REQUEST =========');
+      console.log('System prompt starts with:', systemPrompt.substring(0, 300));
+      console.log('Has NIEMALS Katzen-Tarot?', systemPrompt.includes('NIEMALS "Katzen-Tarot"'));
+      console.log('Has position markers?', systemPrompt.includes('KARTE DER VERGANGENHEIT:'));
+      console.log('=============================================\n');
 
       const response = await axios.post(
         'https://api.anthropic.com/v1/messages',
         {
-          model: 'claude-3-haiku-20240307',
-          max_tokens: 1200,
+          model: 'claude-3-5-sonnet-20241022',
+          max_tokens: 2500,
           messages: [
             {
               role: 'user',
