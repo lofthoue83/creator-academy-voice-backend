@@ -208,11 +208,21 @@ class VoiceTarotService {
         4: 'Outcome/Rat'
       };
 
-      // Get current date for weekly reference
+      // Get current date and calendar week
       const today = new Date();
       const weekDays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
       const currentDay = weekDays[today.getDay()];
       const currentMonth = today.toLocaleDateString('de-DE', { month: 'long' });
+
+      // Calculate calendar week
+      const getWeekNumber = (date) => {
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+      };
+      const calendarWeek = getWeekNumber(today);
 
       // Assign magical roles to friends
       const friendRoles = {
@@ -247,7 +257,8 @@ WICHTIG - Schreibe eine spirituelle Deutung die:
 5. Möglichkeiten und Potenziale aufzeigt: "${friends[0]} könnte dir helfen..." statt "${friends[0]} wird dir..."
 6. Energetische Themen nennt: Transformation, Erkenntnis, innere Stärke, Kreativität, Intuition
 
-Beginne mit: "Liebe ${userName}, diese Woche im ${currentMonth}"
+WICHTIG: Beginne DIREKT mit: "Liebe ${userName}, in der Kalenderwoche ${calendarWeek}"
+KEINE Überschrift wie "DEINE SPIRITUELLE WOCHENLESUNG" verwenden!
 Schreibe über ENERGIEN und MÖGLICHKEITEN, nicht über konkrete Ereignisse!
 Die Freunde sind energetische Begleiter, keine Ereignis-Auslöser.
 Länge: 2000-2500 Zeichen.`;
@@ -277,8 +288,8 @@ Länge: 2000-2500 Zeichen.`;
       const generatedText = response.data.content[0].text;
       console.log('Generated reading length:', generatedText.length, 'characters');
 
-      // Add a mystical closing
-      const finalText = `🌟 DEINE SPIRITUELLE WOCHENLESUNG 🌟\n\n${generatedText}\n\n✨ Vertraue deiner Intuition - das Universum führt dich! ✨`;
+      // Return text without title, just add closing
+      const finalText = `${generatedText}\n\n✨ Vertraue deiner Intuition - das Universum führt dich! ✨`;
 
       return finalText;
 
