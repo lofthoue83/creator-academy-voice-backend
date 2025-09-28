@@ -50,7 +50,7 @@ class VoiceTarotService {
       const result = await fal.subscribe(this.modelId, {
         input: {
           text: textToSpeak,
-          voice_id: "Tilda-001",  // Custom cloned grandmother voice
+          voice_id: "Wise_Woman",  // System voice for wise elderly woman
           audio_setting: {
             sample_rate: 32000,    // Must be integer from allowed values
             bitrate: 128000,       // Must be integer from allowed values
