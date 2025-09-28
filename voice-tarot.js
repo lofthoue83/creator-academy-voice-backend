@@ -224,19 +224,32 @@ class VoiceTarotService {
       };
       const calendarWeek = getWeekNumber(today);
 
-      // Assign magical roles to friends
-      const friendRoles = {
-        [friends[0]]: 'dein kosmischer Wegweiser',
-        [friends[1]]: 'deine spirituelle Spiegelseele',
-        [friends[2]]: 'dein Energieverstärker',
-        [friends[3]]: 'dein Glücksbote'
-      };
+      // Randomly select 1-2 friends for this reading
+      const selectedFriendCount = Math.random() > 0.5 ? 2 : 1;
+      const shuffledFriends = [...friends].sort(() => Math.random() - 0.5);
+      const selectedFriends = shuffledFriends.slice(0, selectedFriendCount);
+
+      // Assign magical roles to selected friends
+      const friendRoles = {};
+      const possibleRoles = [
+        'dein kosmischer Wegweiser',
+        'deine spirituelle Spiegelseele',
+        'dein Energieverstärker',
+        'dein Glücksbote',
+        'deine Inspirationsquelle',
+        'dein Seelentröster',
+        'deine Kraftquelle'
+      ];
+
+      selectedFriends.forEach((friend, index) => {
+        friendRoles[friend] = possibleRoles[index % possibleRoles.length];
+      });
 
       // Create prompt for Claude
       const systemPrompt = `Du bist eine spirituelle Tarot-Beraterin, die persönliche energetische Wochenlesungen für ${userName} erstellt.
 WICHTIG:
 - Sprich ${userName} DIREKT mit Namen an (mindestens 3-4 mal in der Lesung)
-- Erwähne ihre Freunde ${friends.join(', ')} als energetische Begleiter
+- Erwähne ${selectedFriends.length === 1 ? 'den Freund' : 'die Freunde'} ${selectedFriends.join(' und ')} als energetische Begleiter (2-3 mal subtil einstreuen)
 - Beziehe dich auf die Wochenenergie im ${currentMonth}
 - Beschreibe ENERGIEN und MÖGLICHKEITEN, nicht konkrete Ereignisse
 - Verwende Formulierungen wie "könnte", "lädt ein zu", "öffnet sich für"
@@ -246,21 +259,19 @@ WICHTIG:
 
 ${cards.map((card, i) => `${positions[i]}: ${card}`).join('\n')}
 
-${userName}s magische Begleiter diese Woche:
-${Object.entries(friendRoles).map(([friend, role]) => `- ${friend} als ${role}`).join('\n')}
+${Object.keys(friendRoles).length > 0 ? `\n${userName}s spirituelle Begleiter:\n${Object.entries(friendRoles).map(([friend, role]) => `- ${friend} als ${role}`).join('\n')}\n` : ''}
 
 WICHTIG - Schreibe eine spirituelle Deutung die:
 1. ${userName} direkt anspricht (verwende den Namen oft!)
-2. Die ENERGIE und THEMEN der Woche beschreibt (KEINE konkreten Ereignisse wie "Gehaltserhöhung" oder "Anruf")
-3. Die Freunde als spirituelle Begleiter erwähnt - was ihre Energie bewirken KÖNNTE (nicht was konkret passiert)
+2. Die ENERGIE und THEMEN der Woche beschreibt (KEINE konkreten Ereignisse)
+3. ${Object.keys(friendRoles).length > 0 ? `Die Person(en) ${Object.keys(friendRoles).join(' und ')} subtil als energetische Begleiter erwähnt (2-3 mal natürlich einstreuen, nicht übertreiben)` : 'Keine Freunde erwähnen'}
 4. Spirituelle Qualitäten beschreibt: "Die Energie des Mittwochs lädt zu..." statt "Am Mittwoch passiert..."
-5. Möglichkeiten und Potenziale aufzeigt: "${friends[0]} könnte dir helfen..." statt "${friends[0]} wird dir..."
+5. Möglichkeiten und Potenziale aufzeigt, keine festen Vorhersagen
 6. Energetische Themen nennt: Transformation, Erkenntnis, innere Stärke, Kreativität, Intuition
 
 WICHTIG: Beginne DIREKT mit: "Liebe ${userName}, in der Kalenderwoche ${calendarWeek}"
-KEINE Überschrift wie "DEINE SPIRITUELLE WOCHENLESUNG" verwenden!
-Schreibe über ENERGIEN und MÖGLICHKEITEN, nicht über konkrete Ereignisse!
-Die Freunde sind energetische Begleiter, keine Ereignis-Auslöser.
+KEINE Überschrift verwenden!
+Erwähne Freunde nur beiläufig und natürlich, nicht zu oft!
 Länge: 2000-2500 Zeichen.`;
 
       const response = await axios.post(
