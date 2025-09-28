@@ -68,16 +68,15 @@ class VoiceTarotService {
         this.wavespeedEndpoint,
         {
           text: text,
-          voice_id: "Tilda-001",  // Custom cloned grandmother voice
-          speed: 1.0,  // Normal speed
-          volume: 0.95,
+          voice_id: "German_SweetLady",  // German Sweet Lady voice
+          speed: 1.07,  // Slightly faster speed as configured
+          volume: 1.0,
           pitch: 0,  // Natural pitch
           emotion: emotion,  // Dynamic emotion changes
-          // Remove reverb/echo effects
-          audio_setting: {
-            reverb_level: 0,  // No reverb/hall effect
-            noise_reduction: true
-          }
+          // Audio settings
+          sample_rate: 44100,  // Higher quality sample rate
+          bitrate: 128000,  // High bitrate as configured
+          english_normalization: false  // Disabled for German text
         },
         {
           headers: {
@@ -141,6 +140,15 @@ class VoiceTarotService {
       return null;
     } catch (error) {
       console.error(`Error generating segment ${segmentIndex + 1}:`, error.message);
+      if (error.response) {
+        console.error('WaveSpeed API Error Status:', error.response.status);
+        console.error('WaveSpeed API Error Response:', JSON.stringify(error.response.data, null, 2));
+        console.error('Failed request details:', {
+          text: text.substring(0, 50) + '...',
+          voice_id: 'Tilda-001',
+          endpoint: this.wavespeedEndpoint
+        });
+      }
       return null;
     }
   }
