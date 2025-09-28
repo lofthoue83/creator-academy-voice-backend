@@ -51,11 +51,11 @@ class VoiceTarotService {
         input: {
           text: textToSpeak,
           voice_setting: {
-            voice_id: 'Wise_Woman',  // Immer weibliche Stimme verwenden
-            speed: 1.15,  // Optimal für dynamische Lesung
+            voice_id: 'Wise_Woman',  // Weise Frauenstimme (junge Oma)
+            speed: 0.85,  // Langsamer für bedächtige, weise Aussprache
             vol: 1.0,
-            pitch: 1,     // Leicht höher für freundliche Stimme
-            emotion: 'happy'  // Fröhliche, enthusiastische Stimmung
+            pitch: 0.95,  // Etwas tiefer für reifere Stimme
+            emotion: 'warm'  // Warme, beruhigende Stimmung
           },
           audio_setting: {
             sample_rate: 32000,    // Must be integer from allowed values
