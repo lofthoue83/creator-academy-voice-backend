@@ -208,8 +208,37 @@ Bei Unsicherheit: "Unbekannt"`;
 
         const result = response.data.content[0].text.trim().toUpperCase();
 
+        // Valid tarot cards list
+        const validTarotCards = [
+          "THE FOOL", "THE MAGICIAN", "THE HIGH PRIESTESS", "THE EMPRESS",
+          "THE EMPEROR", "THE HIEROPHANT", "THE LOVERS", "THE CHARIOT",
+          "STRENGTH", "THE HERMIT", "WHEEL OF FORTUNE", "JUSTICE",
+          "THE HANGED MAN", "DEATH", "TEMPERANCE", "THE DEVIL",
+          "THE TOWER", "THE STAR", "THE MOON", "THE SUN",
+          "JUDGEMENT", "THE WORLD", "THE ICEBEAR", "THE UNICORN",
+          "ACE OF CUPS", "TWO OF CUPS", "THREE OF CUPS", "FOUR OF CUPS",
+          "FIVE OF CUPS", "SIX OF CUPS", "SEVEN OF CUPS", "EIGHT OF CUPS",
+          "NINE OF CUPS", "TEN OF CUPS", "PAGE OF CUPS", "KNIGHT OF CUPS",
+          "QUEEN OF CUPS", "KING OF CUPS",
+          "ACE OF WANDS", "TWO OF WANDS", "THREE OF WANDS", "FOUR OF WANDS",
+          "FIVE OF WANDS", "SIX OF WANDS", "SEVEN OF WANDS", "EIGHT OF WANDS",
+          "NINE OF WANDS", "TEN OF WANDS", "PAGE OF WANDS", "KNIGHT OF WANDS",
+          "QUEEN OF WANDS", "KING OF WANDS",
+          "ACE OF SWORDS", "TWO OF SWORDS", "THREE OF SWORDS", "FOUR OF SWORDS",
+          "FIVE OF SWORDS", "SIX OF SWORDS", "SEVEN OF SWORDS", "EIGHT OF SWORDS",
+          "NINE OF SWORDS", "TEN OF SWORDS", "PAGE OF SWORDS", "KNIGHT OF SWORDS",
+          "QUEEN OF SWORDS", "KING OF SWORDS",
+          "ACE OF PENTACLES", "TWO OF PENTACLES", "THREE OF PENTACLES", "FOUR OF PENTACLES",
+          "FIVE OF PENTACLES", "SIX OF PENTACLES", "SEVEN OF PENTACLES", "EIGHT OF PENTACLES",
+          "NINE OF PENTACLES", "TEN OF PENTACLES", "PAGE OF PENTACLES", "KNIGHT OF PENTACLES",
+          "QUEEN OF PENTACLES", "KING OF PENTACLES"
+        ];
+
+        // Check if result is a valid tarot card name
+        const isValidCard = validTarotCards.includes(result);
+
         // Check if we got a valid result
-        if (result && result !== 'UNBEKANNT' && result !== 'FALSCHE KARTE') {
+        if (result && result !== 'UNBEKANNT' && result !== 'FALSCHE KARTE' && isValidCard) {
           detectedMotif = result;
           modelUsed = model.name;
           console.log(`Success with ${model.name}: ${detectedMotif}`);

@@ -51,11 +51,11 @@ class VoiceTarotService {
         input: {
           text: textToSpeak,
           voice_setting: {
-            voice_id: 'female-2',  // Reife weibliche Stimme
-            speed: 0.85,  // Langsamer für bedächtige, weise Aussprache
+            voice_id: 'Wise_Woman',  // Valid voice ID for fal.ai
+            speed: 0.9,  // Slightly slower for thoughtful delivery
             vol: 1.0,
-            pitch: 0.95,  // Etwas tiefer für reifere Stimme
-            emotion: 'gentle'  // Sanfte, beruhigende Stimmung
+            pitch: 1.0,  // Normal pitch
+            emotion: 'happy'  // Valid emotion for fal.ai
           },
           audio_setting: {
             sample_rate: 32000,    // Must be integer from allowed values
