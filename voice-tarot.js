@@ -636,6 +636,113 @@ Gesamt: 2000-2500 Zeichen.`;
   async getAvailableVoices() {
     return ['default'];
   }
+
+  /**
+   * Generate audio for activity explanations
+   */
+  async generateActivityAudio(text, activityId) {
+    try {
+      console.log(`Generating activity audio for activity ${activityId}, text length: ${text.length}`);
+
+      // Use emotions for variety
+      const emotions = ["surprised", "happy", "neutral"];
+      const emotion = emotions[activityId % emotions.length];
+      console.log(`Using emotion: ${emotion} for activity ${activityId}`);
+
+      // Use WaveSpeed API to generate audio with MiniMax speech-02-hd
+      const response = await axios.post(
+        this.wavespeedEndpoint,
+        {
+          text: text,
+          voice_id: "German_SweetLady", // German Sweet Lady voice for mystical effect
+          speed: 1.0, // Natural speed for clear explanations
+          volume: 1.0,
+          pitch: 0,
+          emotion: emotion,
+          sample_rate: 44100,
+          bitrate: 128000,
+          english_normalization: false // German text
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${WAVESPEED_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      let result = response.data;
+
+      // If response has data wrapper, extract it
+      if (result.data) {
+        result = result.data;
+      }
+
+      // Poll for result if status is "created" or "processing"
+      if (result.id && result.urls && result.urls.get) {
+        console.log(`Polling for activity ${activityId} audio result...`);
+        let attempts = 0;
+        const maxAttempts = 30; // 30 seconds max wait
+
+        while (attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+
+          const pollResponse = await axios.get(
+            result.urls.get,
+            {
+              headers: {
+                'Authorization': `Bearer ${WAVESPEED_API_KEY}`
+              }
+            }
+          );
+
+          const pollResult = pollResponse.data.data || pollResponse.data;
+
+          if (pollResult.status === 'completed' && pollResult.outputs && pollResult.outputs.length > 0) {
+            return {
+              success: true,
+              audioUrl: pollResult.outputs[0],
+              duration: Math.ceil(text.length / 5), // Rough estimate
+              jobId: result.id
+            };
+          } else if (pollResult.status === 'failed' || pollResult.status === 'error') {
+            console.error(`Activity ${activityId} audio generation failed:`, pollResult.error);
+            throw new Error(pollResult.error || 'Audio generation failed');
+          }
+
+          attempts++;
+        }
+
+        throw new Error('Timeout waiting for audio generation');
+      }
+
+      // Direct response check (if not async)
+      if (result && result.outputs && result.outputs.length > 0) {
+        return {
+          success: true,
+          audioUrl: result.outputs[0],
+          duration: Math.ceil(text.length / 5),
+          jobId: result.id || 'wavespeed-job'
+        };
+      }
+
+      throw new Error('No audio data received from WaveSpeed');
+
+    } catch (error) {
+      console.error('Error generating activity audio:', error.message);
+      if (error.response) {
+        console.error('WaveSpeed API Error:', error.response.status, error.response.data);
+      }
+
+      // Return error details for debugging
+      return {
+        success: false,
+        audioUrl: null,
+        duration: 0,
+        error: error.message
+      };
+    }
+  }
 }
 
 module.exports = VoiceTarotService;

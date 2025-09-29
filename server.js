@@ -443,6 +443,192 @@ app.get('/available-voices', async (req, res) => {
   }
 });
 
+// Generate weekly activities from Tarot reading
+app.post('/generate-weekly-activities', async (req, res) => {
+  try {
+    const { detectedCards, readingText, userName = 'Seeker' } = req.body;
+
+    if (!readingText) {
+      return res.status(400).json({ error: 'No reading text provided' });
+    }
+
+    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+
+    // Create prompt for generating weekly activities
+    const activitiesPrompt = `Du bist ein mystischer Tarot-Meister, der aus einer kosmischen Lesung 8 konkrete Wochenaktivitäten ableitet.
+
+TAROT-LESUNG:
+${readingText}
+
+GEZOGENE KARTEN:
+${detectedCards ? detectedCards.join(', ') : 'Verschiedene kosmische Karten'}
+
+AUFGABE:
+Erstelle 8 konkrete, positive Wochenaktivitäten basierend auf dieser Lesung. Jede Aktivität soll:
+1. Direkt mit der Energie und Botschaft der Karten verbunden sein
+2. Praktisch und innerhalb einer Woche umsetzbar sein
+3. Verschiedene Lebensbereiche abdecken (Selbstfürsorge, Kreativität, soziale Verbindungen, persönliche Entwicklung, etc.)
+4. Positiv und aufbauend formuliert sein
+5. Eine mystische Erklärung haben (15-35 Sekunden Sprechtext)
+
+FORMAT (JSON):
+{
+  "activities": [
+    {
+      "id": 1,
+      "title": "Kurzer prägnanter Titel (max 5 Wörter)",
+      "description": "Konkrete Beschreibung der Aktivität (1-2 Sätze)",
+      "mysticalExplanation": "Mystische Erklärung im Tarot-Stil, warum diese Aktivität jetzt wichtig ist. Verbinde sie mit der kosmischen Energie der Karten. (15-35 Sekunden Sprechtext)",
+      "category": "Selbstfürsorge|Kreativität|Beziehungen|Spiritualität|Abenteuer|Ordnung|Lernen|Natur"
+    }
+  ]
+}
+
+Beziehe dich auf die gezogenen Karten und ihre Bedeutungen. Mache die Aktivitäten persönlich und magisch!`;
+
+    // Call Claude API
+    const response = await axios.post(
+      'https://api.anthropic.com/v1/messages',
+      {
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 2000,
+        temperature: 0.8,
+        messages: [
+          {
+            role: 'user',
+            content: activitiesPrompt
+          }
+        ]
+      },
+      {
+        headers: {
+          'x-api-key': ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    // Parse the response
+    const responseText = response.data.content[0].text;
+    let activities;
+
+    try {
+      // Extract JSON from the response
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        activities = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('No valid JSON found in response');
+      }
+    } catch (parseError) {
+      console.error('Failed to parse activities:', parseError);
+      // Fallback activities
+      activities = {
+        activities: [
+          {
+            id: 1,
+            title: "Morgenmeditation beginnen",
+            description: "Starte jeden Tag mit 5 Minuten stiller Reflexion.",
+            mysticalExplanation: "Die Karten zeigen, dass deine innere Weisheit erwacht. Diese Morgenmeditation öffnet das Portal zu deiner Intuition und lädt kosmische Klarheit in deinen Tag ein.",
+            category: "Spiritualität"
+          },
+          {
+            id: 2,
+            title: "Kreatives Tagebuch führen",
+            description: "Schreibe oder zeichne täglich deine Träume und Visionen auf.",
+            mysticalExplanation: "Deine kreativen Energien sind besonders stark. Das Universum spricht durch deine Kunst zu dir - lass die Magie durch deine Hände fließen.",
+            category: "Kreativität"
+          },
+          {
+            id: 3,
+            title: "Einen Freund überraschen",
+            description: "Sende eine liebevolle Nachricht oder kleines Geschenk an jemand Besonderen.",
+            mysticalExplanation: "Die Karten zeigen Verbindungen, die gestärkt werden wollen. Deine Geste wird kosmische Wellen der Freude aussenden und vielfach zu dir zurückkehren.",
+            category: "Beziehungen"
+          },
+          {
+            id: 4,
+            title: "Naturspaziergang bei Vollmond",
+            description: "Verbringe Zeit in der Natur und lade dich mit Erdenergie auf.",
+            mysticalExplanation: "Die Elemente rufen nach dir. In der Natur findest du die Antworten, die deine Seele sucht - lass dich von der Weisheit der Erde führen.",
+            category: "Natur"
+          },
+          {
+            id: 5,
+            title: "Neue Fähigkeit lernen",
+            description: "Beginne etwas Neues zu lernen, das dich schon lange fasziniert.",
+            mysticalExplanation: "Dein Geist hungert nach Expansion. Das Universum öffnet neue Türen des Wissens für dich - tritt mutig hindurch.",
+            category: "Lernen"
+          },
+          {
+            id: 6,
+            title: "Heilendes Bad nehmen",
+            description: "Gönne dir ein entspannendes Bad mit Kerzen und beruhigender Musik.",
+            mysticalExplanation: "Wasser ist dein Element der Reinigung. Lass alle negativen Energien fortspülen und tauche erneuert aus diesem heiligen Ritual auf.",
+            category: "Selbstfürsorge"
+          },
+          {
+            id: 7,
+            title: "Raum energetisch reinigen",
+            description: "Ordne und reinige einen wichtigen Bereich deines Zuhauses.",
+            mysticalExplanation: "Dein heiliger Raum spiegelt deine innere Welt. Durch das Klären des Äußeren schaffst du Platz für neue kosmische Segnungen.",
+            category: "Ordnung"
+          },
+          {
+            id: 8,
+            title: "Spontanes Mikroabenteuer",
+            description: "Unternimm etwas Ungewöhnliches und verlasse deine Komfortzone.",
+            mysticalExplanation: "Die Karten fordern dich auf, mutig zu sein. In der Unbekannten wartet magische Transformation auf dich - wage den Sprung ins Mysterium.",
+            category: "Abenteuer"
+          }
+        ]
+      };
+    }
+
+    res.json({
+      success: true,
+      activities: activities.activities
+    });
+
+  } catch (error) {
+    console.error('Error generating weekly activities:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate weekly activities',
+      details: error.message
+    });
+  }
+});
+
+// Generate audio for activity explanation
+app.post('/generate-activity-audio', async (req, res) => {
+  try {
+    const { text, activityId } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ error: 'No text provided' });
+    }
+
+    // Generate audio using the Voice Tarot service
+    const audioResult = await voiceTarot.generateActivityAudio(text, activityId);
+
+    res.json({
+      success: true,
+      audioUrl: audioResult.audioUrl,
+      duration: audioResult.duration
+    });
+
+  } catch (error) {
+    console.error('Error generating activity audio:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate activity audio',
+      details: error.message
+    });
+  }
+});
+
 // Health check
 app.get('/', (req, res) => {
   res.json({
