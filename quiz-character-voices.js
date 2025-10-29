@@ -115,8 +115,13 @@ class QuizCharacterVoiceService {
    */
   async generateCharacterAnswer(characterName, question, userName = 'Spieler') {
     try {
+      console.log(`🎯 generateCharacterAnswer called with: "${characterName}"`);
+      console.log(`Available characters:`, Object.keys(this.characters));
+
       const character = this.characters[characterName.toUpperCase()];
       if (!character) {
+        console.error(`❌ Character not found: "${characterName}" (uppercased: "${characterName.toUpperCase()}")`);
+        console.error(`Available characters:`, Object.keys(this.characters));
         throw new Error(`Unknown character: ${characterName}`);
       }
 

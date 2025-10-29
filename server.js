@@ -470,6 +470,17 @@ app.post('/quiz-character-response', async (req, res) => {
       voiceId: voiceId || 'none'
     });
 
+    // Validate character exists
+    const validCharacters = ['DER FROSCHKÖNIG', 'DER CASANOVA', 'DIE FLEDERMAUS'];
+    if (!validCharacters.includes(character.toUpperCase())) {
+      console.error(`❌ Invalid character: "${character}"`);
+      console.error(`Valid characters: ${validCharacters.join(', ')}`);
+      return res.status(400).json({
+        success: false,
+        error: `Invalid character: ${character}. Valid characters: ${validCharacters.join(', ')}`
+      });
+    }
+
     // Generate answer
     const answer = await quizCharacterVoice.generateCharacterAnswer(
       character,
