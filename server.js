@@ -453,7 +453,7 @@ app.get('/available-voices', async (req, res) => {
 // Generate quiz character response with voice
 app.post('/quiz-character-response', async (req, res) => {
   try {
-    const { character, question, userName } = req.body;
+    const { character, question, userName, userId, voiceId } = req.body;
 
     if (!character || !question) {
       return res.status(400).json({
@@ -462,13 +462,45 @@ app.post('/quiz-character-response', async (req, res) => {
       });
     }
 
-    console.log(`\n🎭 Quiz Character Request:`, { character, question, userName });
+    console.log(`\n🎭 Quiz Character Request:`, {
+      character,
+      question,
+      userName,
+      userId: userId || 'anonymous',
+      voiceId: voiceId || 'none'
+    });
 
-    const result = await quizCharacterVoice.generateQuizResponse(
+    // Generate answer
+    const answer = await quizCharacterVoice.generateCharacterAnswer(
       character,
       question,
       userName || 'Spieler'
     );
+
+    console.log(`📝 Generated answer: ${answer}`);
+
+    // Generate voice with clone if available
+    const voice = await quizCharacterVoice.generateCharacterVoiceWithClone(
+      character,
+      answer,
+      userId || 'anonymous',
+      voiceId || null
+    );
+
+    console.log(`🎙️ Generated voice: ${voice.audioUrl}`);
+
+    // Return complete response
+    const result = {
+      success: true,
+      character: character,
+      question: question,
+      answer: answer,
+      audioUrl: voice.audioUrl,
+      jobId: voice.jobId,
+      usedVoiceClone: voice.usedVoiceClone || false,
+      emoji: quizCharacterVoice.characters[character.toUpperCase()]?.emoji || '🎭',
+      personality: quizCharacterVoice.characters[character.toUpperCase()]?.personality || 'character'
+    };
 
     res.json(result);
 

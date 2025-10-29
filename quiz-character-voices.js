@@ -248,11 +248,12 @@ class QuizCharacterVoiceService {
       // Determine actual voice to use
       let voiceId = character.voiceSettings.voice_id;
 
-      // Map to actual available voices
+      // Map to actual available Wavespeed voices
+      // Use the same working voice for all characters temporarily
       const voiceMapping = {
-        'German_MaleNoble': 'Elegant_Man',  // Royal sophisticated voice
-        'German_SmoothMale': 'Casual_Guy',  // Smooth charming voice
-        'German_MysticalFemale': 'Wise_Woman'  // Mysterious female voice
+        'German_MaleNoble': 'Wise_Woman',      // Use working voice for now
+        'German_SmoothMale': 'Wise_Woman',     // Use working voice for now
+        'German_MysticalFemale': 'Wise_Woman'  // This one already works!
       };
 
       voiceId = voiceMapping[voiceId] || voiceId;
