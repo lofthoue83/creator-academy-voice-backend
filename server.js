@@ -587,13 +587,31 @@ app.post('/generate-with-clone', async (req, res) => {
 // Test voice clone
 app.post('/test-voice-clone', async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId, voiceId } = req.body;
 
     if (!userId) {
       return res.status(400).json({
         success: false,
         error: 'Missing required parameter: userId'
       });
+    }
+
+    // If voiceId is provided, inject it into the service
+    if (voiceId) {
+      // Temporarily store the voice clone if not exists
+      if (!voiceCloning.userVoiceEmbeddings.has(userId)) {
+        voiceCloning.userVoiceEmbeddings.set(userId, {
+          embedding: {
+            type: 'wavespeed_minimax',
+            voiceId: voiceId,
+            createdAt: new Date().toISOString()
+          },
+          createdAt: new Date().toISOString(),
+          sampleDuration: 10,
+          language: 'de'
+        });
+        console.log(`📱 Restored voice clone from iOS app for user: ${userId} with Voice ID: ${voiceId}`);
+      }
     }
 
     const result = await voiceCloning.testVoiceClone(userId);
