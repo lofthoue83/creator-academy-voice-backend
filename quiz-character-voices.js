@@ -105,8 +105,8 @@ class QuizCharacterVoiceService {
 
     // Fallback voices that definitely exist
     this.fallbackVoices = {
-      male: "German_MaleStandard",
-      female: "German_SweetLady"
+      male: "Deep_Voice_Man",
+      female: "Wise_Woman"
     };
   }
 
@@ -244,9 +244,9 @@ class QuizCharacterVoiceService {
 
       // Map to actual available voices
       const voiceMapping = {
-        'German_MaleNoble': 'German_MaleStandard',
-        'German_SmoothMale': 'German_MaleStandard',
-        'German_MysticalFemale': 'German_SweetLady'
+        'German_MaleNoble': 'Elegant_Man',  // Royal sophisticated voice
+        'German_SmoothMale': 'Casual_Guy',  // Smooth charming voice
+        'German_MysticalFemale': 'Wise_Woman'  // Mysterious female voice
       };
 
       voiceId = voiceMapping[voiceId] || voiceId;
@@ -260,7 +260,8 @@ class QuizCharacterVoiceService {
         emotion: character.voiceSettings.emotion,
         sample_rate: 44100,
         bitrate: 128000,
-        english_normalization: false
+        english_normalization: false,
+        language_boost: "de"  // German language boost for better pronunciation
       };
 
       console.log('Wavespeed request:', requestBody);
