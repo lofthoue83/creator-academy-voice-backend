@@ -266,8 +266,8 @@ class QuizCharacterVoiceService {
         emotion: character.voiceSettings.emotion,
         sample_rate: 44100,
         bitrate: 128000,
-        english_normalization: false,
-        language_boost: "de"  // German language boost for better pronunciation
+        english_normalization: false
+        // Removed language_boost - causing issues with API
       };
 
       console.log('Wavespeed request:', requestBody);
