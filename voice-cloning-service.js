@@ -1,8 +1,13 @@
 const axios = require('axios');
+const fs = require('fs').promises;
+const path = require('path');
 
 // API Keys - Replicate ist optional, wir nutzen erstmal Wavespeed
 const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY;
 const WAVESPEED_API_KEY = process.env.WAVESPEED_API_KEY;
+
+// Storage file path für persistente Voice Clones
+const STORAGE_FILE = path.join(__dirname, 'voice-clones-storage.json');
 
 // Conditional Replicate import
 let Replicate;
@@ -32,6 +37,49 @@ class VoiceCloningService {
 
     // Store user voice embeddings (in production, use database)
     this.userVoiceEmbeddings = new Map();
+
+    // Load persisted voice clones on startup
+    this.loadPersistedVoiceClones();
+  }
+
+  /**
+   * Load persisted voice clones from file
+   */
+  async loadPersistedVoiceClones() {
+    try {
+      const data = await fs.readFile(STORAGE_FILE, 'utf-8');
+      const storedClones = JSON.parse(data);
+
+      // Restore voice clones to memory
+      Object.entries(storedClones).forEach(([userId, voiceData]) => {
+        this.userVoiceEmbeddings.set(userId, voiceData);
+        console.log(`📂 Loaded voice clone for user: ${userId} with Voice ID: ${voiceData.embedding?.voiceId}`);
+      });
+
+      console.log(`✅ Loaded ${this.userVoiceEmbeddings.size} voice clones from storage`);
+    } catch (error) {
+      // File doesn't exist yet, that's ok
+      if (error.code !== 'ENOENT') {
+        console.error('Error loading voice clones:', error);
+      }
+    }
+  }
+
+  /**
+   * Save voice clones to persistent storage
+   */
+  async saveVoiceClones() {
+    try {
+      const toStore = {};
+      this.userVoiceEmbeddings.forEach((value, key) => {
+        toStore[key] = value;
+      });
+
+      await fs.writeFile(STORAGE_FILE, JSON.stringify(toStore, null, 2));
+      console.log(`💾 Saved ${this.userVoiceEmbeddings.size} voice clones to storage`);
+    } catch (error) {
+      console.error('Error saving voice clones:', error);
+    }
   }
 
   /**
@@ -42,8 +90,28 @@ class VoiceCloningService {
    */
   async createVoiceClone(audioBase64, userId) {
     try {
-      console.log(`🎤 Creating voice clone for user: ${userId}`);
+      console.log(`🎤 Voice clone request for user: ${userId}`);
 
+      // WICHTIG: Prüfe ob bereits eine Voice Clone existiert!
+      if (this.userVoiceEmbeddings.has(userId)) {
+        const existingVoice = this.userVoiceEmbeddings.get(userId);
+        console.log(`✅ Voice clone already exists for user: ${userId} with Voice ID: ${existingVoice.embedding.voiceId}`);
+        return {
+          success: true,
+          userId: userId,
+          embeddingId: `voice_${userId}_existing`,
+          message: 'Voice clone already exists',
+          voiceId: existingVoice.embedding.voiceId,
+          metadata: {
+            createdAt: existingVoice.createdAt,
+            sampleDuration: existingVoice.sampleDuration,
+            language: existingVoice.language,
+            mode: 'existing'
+          }
+        };
+      }
+
+      console.log(`🎤 Creating NEW voice clone for user: ${userId}`);
       let voiceEmbedding;
 
       // Use Wavespeed MiniMax Voice Clone API
@@ -138,7 +206,10 @@ class VoiceCloningService {
         language: 'de'
       });
 
-      console.log(`✅ Voice clone created successfully for user: ${userId}`);
+      // WICHTIG: Save to persistent storage!
+      await this.saveVoiceClones();
+
+      console.log(`✅ Voice clone created and saved for user: ${userId}`);
 
       return {
         success: true,
@@ -498,6 +569,10 @@ class VoiceCloningService {
   async deleteVoiceClone(userId) {
     if (this.userVoiceEmbeddings.has(userId)) {
       this.userVoiceEmbeddings.delete(userId);
+
+      // Save changes to persistent storage
+      await this.saveVoiceClones();
+
       return {
         success: true,
         message: `Voice clone deleted for user: ${userId}`
