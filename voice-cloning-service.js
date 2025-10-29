@@ -135,9 +135,9 @@ class VoiceCloningService {
               audio: audioDataUrl,  // Audio as base64 data URL string
               custom_voice_id: customVoiceId,
               model: 'speech-02-hd',
-              need_noise_reduction: false,
+              need_noise_reduction: true,  // AKTIVIERT für saubere Stimme!
               need_volume_normalization: true,
-              accuracy: 0.7,
+              accuracy: 0.9,  // Erhöht von 0.7 auf 0.9 für bessere Qualität
               text: 'Hallo! Das ist meine geklonte Stimme. Ich kann jetzt alle Texte mit meiner eigenen Stimme sprechen!'
             },
             {
@@ -315,8 +315,9 @@ class VoiceCloningService {
               volume: 1.5,  // ERHÖHT von 1.0 auf 1.5 für mehr Präsenz!
               pitch: 0,
               emotion: emotion,
-              sample_rate: 44100,
-              bitrate: 128000,
+              sample_rate: 44100,  // Höchste Qualität
+              bitrate: 320000,     // Erhöht von 128000 auf 320000 für beste Qualität!
+              audio_format: 'mp3',  // Explizit MP3 Format
               english_normalization: false
             },
             {
