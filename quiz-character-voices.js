@@ -19,7 +19,7 @@ class QuizCharacterVoiceService {
           voice_id: "German_MaleNoble", // Will fallback to available voice
           speed: 0.95, // Langsamer, bedacht
           pitch: 2, // Höhere Stimme
-          emotion: "confident",
+          emotion: "happy", // Changed from "confident" - API only allows specific emotions
           volume: 1.0
         },
         claudeSystemPrompt: `Du bist DER FROSCHKÖNIG - ein verwöhnter aber liebenswerter Prinz.
@@ -167,14 +167,34 @@ class QuizCharacterVoiceService {
   /**
    * Generate voice audio for character answer with Voice Clone if available
    */
-  async generateCharacterVoiceWithClone(characterName, text, userId) {
+  async generateCharacterVoiceWithClone(characterName, text, userId, voiceId = null) {
     try {
       const character = this.characters[characterName.toUpperCase()];
       if (!character) {
         throw new Error(`Unknown character: ${characterName}`);
       }
 
-      console.log(`🎤 Generating ${characterName} voice with clone for user: ${userId}`);
+      console.log(`🎤 Generating ${characterName} voice for user: ${userId}`);
+      console.log(`📢 Voice ID provided: ${voiceId || 'None'}`);
+
+      // If voiceId is provided, ensure voice clone is available
+      if (voiceId && this.voiceCloningService) {
+        // Store the voice ID for this user if not already present
+        if (!this.voiceCloningService.userVoiceEmbeddings.has(userId)) {
+          console.log(`📱 Setting voice clone for user: ${userId} with ID: ${voiceId}`);
+          this.voiceCloningService.userVoiceEmbeddings.set(userId, {
+            embedding: {
+              type: 'wavespeed_minimax',
+              voiceId: voiceId,
+              createdAt: new Date().toISOString()
+            },
+            metadata: {
+              createdAt: new Date().toISOString(),
+              sampleCount: 1
+            }
+          });
+        }
+      }
 
       // Check if user has a voice clone
       if (this.voiceCloningService && this.voiceCloningService.userVoiceEmbeddings.has(userId)) {
