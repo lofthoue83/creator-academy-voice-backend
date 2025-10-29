@@ -211,16 +211,20 @@ class VoiceCloningService {
 
       console.log(`✅ Voice clone created and saved for user: ${userId}`);
 
+      // Get the voice ID from the embedding
+      const voiceId = voiceEmbedding?.voiceId || null;
+
       return {
         success: true,
         userId: userId,
+        voiceId: voiceId,  // WICHTIG: Voice ID im Response zurückgeben!
         embeddingId: `voice_${userId}_${Date.now()}`,
         message: 'Voice clone created successfully',
         metadata: {
           createdAt: new Date().toISOString(),
           sampleDuration: 10,
           language: 'de',
-          mode: this.replicate ? 'replicate' : 'mock'
+          mode: voiceEmbedding?.type || 'mock'
         }
       };
 
