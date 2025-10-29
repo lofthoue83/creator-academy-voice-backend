@@ -5,8 +5,9 @@ const WAVESPEED_API_KEY = process.env.WAVESPEED_API_KEY;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
 class QuizCharacterVoiceService {
-  constructor() {
+  constructor(voiceCloningService = null) {
     this.wavespeedEndpoint = 'https://api.wavespeed.ai/api/v3/minimax/speech-02-hd';
+    this.voiceCloningService = voiceCloningService; // Inject voice cloning service
 
     // Character configurations with unique personalities
     this.characters = {
@@ -160,6 +161,49 @@ class QuizCharacterVoiceService {
     } catch (error) {
       console.error('Error generating character answer:', error);
       return this.getFallbackAnswer(characterName, question, userName);
+    }
+  }
+
+  /**
+   * Generate voice audio for character answer with Voice Clone if available
+   */
+  async generateCharacterVoiceWithClone(characterName, text, userId) {
+    try {
+      const character = this.characters[characterName.toUpperCase()];
+      if (!character) {
+        throw new Error(`Unknown character: ${characterName}`);
+      }
+
+      console.log(`🎤 Generating ${characterName} voice with clone for user: ${userId}`);
+
+      // Check if user has a voice clone
+      if (this.voiceCloningService && this.voiceCloningService.userVoiceEmbeddings.has(userId)) {
+        try {
+          // Use the cloned voice with character's emotion
+          const result = await this.voiceCloningService.generateWithClonedVoice(
+            text,
+            userId,
+            character.voiceSettings.emotion
+          );
+
+          console.log(`✅ Generated with Voice Clone for ${characterName}`);
+          return {
+            audioUrl: result.audioUrl,
+            text: text,
+            character: characterName,
+            usedVoiceClone: true,
+            jobId: result.jobId || 'voice-clone'
+          };
+        } catch (cloneError) {
+          console.error('Voice clone failed, falling back to standard voice:', cloneError);
+        }
+      }
+
+      // Fallback to standard character voice
+      return await this.generateCharacterVoice(characterName, text);
+    } catch (error) {
+      console.error(`Error generating ${characterName} voice with clone:`, error);
+      throw error;
     }
   }
 
@@ -337,6 +381,99 @@ class QuizCharacterVoiceService {
 
     const characterFallbacks = fallbacks[characterName.toUpperCase()] || [`${characterName} antwortet...`];
     return characterFallbacks[Math.floor(Math.random() * characterFallbacks.length)];
+  }
+
+  /**
+   * PRE-GENERATE ALL 3 CHARACTER RESPONSES IN PARALLEL WITH VOICE CLONE
+   * This is the main method for Woman Flow AR mode
+   */
+  async preGenerateAllCharacterResponses(question, userId, userName = 'Spielerin') {
+    try {
+      console.log(`\n🚀 PRE-GENERATING ALL CHARACTER RESPONSES for user: ${userId}`);
+      console.log(`📝 Question: "${question}"`);
+
+      const startTime = Date.now();
+      const characterNames = Object.keys(this.characters);
+
+      // Step 1: Generate all text answers in parallel
+      console.log('📖 Generating text answers for all characters...');
+      const textPromises = characterNames.map(name =>
+        this.generateCharacterAnswer(name, question, userName)
+          .then(answer => ({ character: name, answer }))
+          .catch(error => ({
+            character: name,
+            answer: this.getFallbackAnswer(name, question, userName),
+            error: error.message
+          }))
+      );
+
+      const textResponses = await Promise.all(textPromises);
+      console.log(`✅ Text generation complete in ${Date.now() - startTime}ms`);
+
+      // Step 2: Generate voice for all answers in parallel (with Voice Clone if available)
+      console.log('🎙️ Generating voices for all characters...');
+      const voicePromises = textResponses.map(({ character, answer }) =>
+        this.generateCharacterVoiceWithClone(character, answer, userId)
+          .then(voice => ({
+            character,
+            answer,
+            audioUrl: voice.audioUrl,
+            usedVoiceClone: voice.usedVoiceClone,
+            success: true
+          }))
+          .catch(error => ({
+            character,
+            answer,
+            audioUrl: null,
+            error: error.message,
+            success: false
+          }))
+      );
+
+      const voiceResponses = await Promise.all(voicePromises);
+      const totalTime = Date.now() - startTime;
+
+      console.log(`✅ ALL RESPONSES READY in ${totalTime}ms!`);
+
+      // Format the response
+      const result = {
+        success: true,
+        question: question,
+        userId: userId,
+        generationTime: totalTime,
+        responses: {}
+      };
+
+      // Organize by character name for easy access
+      voiceResponses.forEach(response => {
+        const charData = this.characters[response.character];
+        result.responses[response.character] = {
+          answer: response.answer,
+          audioUrl: response.audioUrl,
+          emoji: charData.emoji,
+          personality: charData.personality,
+          success: response.success,
+          usedVoiceClone: response.usedVoiceClone || false,
+          error: response.error
+        };
+      });
+
+      // Log summary
+      const successCount = voiceResponses.filter(r => r.success).length;
+      const voiceCloneCount = voiceResponses.filter(r => r.usedVoiceClone).length;
+      console.log(`📊 Summary: ${successCount}/3 successful, ${voiceCloneCount}/3 with voice clone`);
+
+      return result;
+
+    } catch (error) {
+      console.error('Error in preGenerateAllCharacterResponses:', error);
+      return {
+        success: false,
+        error: error.message,
+        question: question,
+        userId: userId
+      };
+    }
   }
 
   /**

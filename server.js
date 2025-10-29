@@ -13,8 +13,9 @@ const PORT = process.env.PORT || 3000;
 
 // Initialize Voice Services
 const voiceTarot = new VoiceTarotService();
-const quizCharacterVoice = new QuizCharacterVoiceService();
 const voiceCloning = new VoiceCloningService();
+// Pass voiceCloning to quizCharacterVoice so it can use voice clones
+const quizCharacterVoice = new QuizCharacterVoiceService(voiceCloning);
 
 // Increase payload size limit for base64 images
 app.use(cors());
@@ -520,6 +521,58 @@ app.post('/test-quiz-characters', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to test characters',
+      details: error.message
+    });
+  }
+});
+
+// PRE-GENERATE ALL CHARACTER RESPONSES FOR WOMAN FLOW AR MODE
+app.post('/woman-flow/pre-generate-responses', async (req, res) => {
+  try {
+    const { question, userId, userName, voiceId } = req.body;
+
+    if (!question || !userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required parameters: question and userId'
+      });
+    }
+
+    console.log(`\n🎭 WOMAN FLOW PRE-GENERATION REQUEST`);
+    console.log(`User: ${userId}`);
+    console.log(`Question: ${question}`);
+    console.log(`Voice ID: ${voiceId || 'Not provided'}`);
+
+    // If voiceId is provided, ensure voice clone is available
+    if (voiceId && !voiceCloning.userVoiceEmbeddings.has(userId)) {
+      console.log(`📱 Restoring voice clone for user: ${userId}`);
+      voiceCloning.userVoiceEmbeddings.set(userId, {
+        embedding: {
+          type: 'wavespeed_minimax',
+          voiceId: voiceId,
+          createdAt: new Date().toISOString()
+        },
+        createdAt: new Date().toISOString(),
+        sampleDuration: 10,
+        language: 'de'
+      });
+    }
+
+    // Pre-generate all 3 character responses in parallel
+    const result = await quizCharacterVoice.preGenerateAllCharacterResponses(
+      question,
+      userId,
+      userName || 'Schöne'
+    );
+
+    console.log(`\n✅ Woman Flow responses ready!`);
+    res.json(result);
+
+  } catch (error) {
+    console.error('Woman Flow pre-generation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to pre-generate responses',
       details: error.message
     });
   }
