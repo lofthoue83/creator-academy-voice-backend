@@ -119,9 +119,11 @@ class VoiceCloningService {
         try {
           console.log('🔄 Creating voice clone with Wavespeed MiniMax...');
 
-          // Create a unique voice ID for this user
-          const customVoiceId = `WaveUser${userId.substring(0, 8).replace(/-/g, '')}`;
-          console.log(`Creating voice with ID: ${customVoiceId}`);
+          // Create a unique voice ID for this user with timestamp to avoid duplicates
+          const timestamp = Date.now().toString(36); // Convert to base36 for shorter string
+          const userPart = userId.substring(0, 12).replace(/-/g, '');
+          const customVoiceId = `Wave${userPart}_${timestamp}`;
+          console.log(`Creating unique voice with ID: ${customVoiceId}`);
 
           // Create the audio data URL
           const audioDataUrl = `data:audio/wav;base64,${audioBase64}`;
@@ -189,6 +191,22 @@ class VoiceCloningService {
 
         } catch (wavespeedError) {
           console.error('Wavespeed MiniMax error:', wavespeedError);
+
+          // If duplicate ID error, clear existing clone and retry with new ID
+          if (wavespeedError.message && wavespeedError.message.includes('duplicate')) {
+            console.log('🔄 Clearing existing voice clone due to duplicate ID...');
+            this.userVoiceEmbeddings.delete(userId);
+            await this.saveVoiceClones();
+
+            // Retry with a more unique ID
+            const retryTimestamp = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+            const retryCustomVoiceId = `Wave${userId.substring(0, 8).replace(/-/g, '')}_${retryTimestamp}`;
+            console.log(`🔄 Retrying with new unique ID: ${retryCustomVoiceId}`);
+
+            // Don't actually retry here, just throw an error to retry from client
+            throw new Error('Voice ID duplicate. Please try again to create a new unique voice clone.');
+          }
+
           console.log('Falling back to mock embedding');
           voiceEmbedding = this.createMockEmbedding(audioBase64);
         }
