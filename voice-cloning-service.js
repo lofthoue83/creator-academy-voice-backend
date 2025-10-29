@@ -200,6 +200,13 @@ class VoiceCloningService {
         throw new Error(`No voice clone found for user: ${userId}`);
       }
 
+      // Dynamische Emotion auswählen wenn nicht spezifisch angegeben
+      if (emotion === 'neutral') {
+        const dynamicEmotions = ['happy', 'surprised', 'happy'];  // 2x happy für höhere Wahrscheinlichkeit
+        emotion = dynamicEmotions[Math.floor(Math.random() * dynamicEmotions.length)];
+        console.log(`🎭 Dynamisch gewählte Emotion: ${emotion}`);
+      }
+
       // Use Wavespeed MiniMax with the cloned voice
       if (userVoiceData.embedding.type === 'wavespeed_minimax' && userVoiceData.embedding.voiceId) {
         try {
@@ -212,7 +219,7 @@ class VoiceCloningService {
               text: text,
               voice_id: userVoiceData.embedding.voiceId, // Use the cloned voice ID!
               speed: 1.0,
-              volume: 1.0,
+              volume: 1.5,  // ERHÖHT von 1.0 auf 1.5 für mehr Präsenz!
               pitch: 0,
               emotion: emotion,
               sample_rate: 44100,
@@ -315,7 +322,7 @@ class VoiceCloningService {
           text: text,
           voice_id: voiceId,
           speed: speed,
-          volume: 1.0,
+          volume: 1.5,  // ERHÖHT für mehr Präsenz!
           pitch: pitch,
           emotion: emotion,
           sample_rate: 44100,
@@ -396,13 +403,20 @@ class VoiceCloningService {
     try {
       console.log('⚠️ Falling back to Wavespeed TTS...');
 
+      // Dynamische Emotion auch für Fallback
+      if (emotion === 'neutral') {
+        const dynamicEmotions = ['happy', 'surprised', 'happy'];
+        emotion = dynamicEmotions[Math.floor(Math.random() * dynamicEmotions.length)];
+        console.log(`🎭 Fallback mit dynamischer Emotion: ${emotion}`);
+      }
+
       const response = await axios.post(
         'https://api.wavespeed.ai/api/v3/minimax/speech-02-hd',
         {
           text: text,
           voice_id: "German_SweetLady",
           speed: 1.0,
-          volume: 1.0,
+          volume: 1.5,  // ERHÖHT für mehr Präsenz!
           pitch: 0,
           emotion: emotion,
           sample_rate: 44100,
@@ -463,14 +477,19 @@ class VoiceCloningService {
    */
   async testVoiceClone(userId) {
     const testTexts = [
-      "Hallo! Das ist meine geklonte Stimme.",
-      "Ich kann jetzt alle Quiz-Fragen mit meiner eigenen Stimme beantworten!",
-      "Ist das nicht unglaublich? Die Technologie ist wirklich beeindruckend."
+      "WOW! Das ist ja MEINE Stimme! Kannst du das glauben? Das klingt wirklich wie ich!",
+      "Ich bin SO aufgeregt! Meine eigene Stimme wurde gerade geklont und es ist FANTASTISCH!",
+      "OH MEIN GOTT! Das ist unglaublich! Ich höre mich selbst sprechen! Die Technologie ist der WAHNSINN!",
+      "YESSS! Das funktioniert wirklich! Ich kann jetzt mit meiner eigenen Stimme antworten! Wie cool ist das denn?"
     ];
 
     const randomText = testTexts[Math.floor(Math.random() * testTexts.length)];
 
-    return this.generateWithClonedVoice(randomText, userId, 'happy');
+    // Nutze immer 'happy' oder 'surprised' für Tests
+    const testEmotions = ['happy', 'surprised'];
+    const emotion = testEmotions[Math.floor(Math.random() * testEmotions.length)];
+
+    return this.generateWithClonedVoice(randomText, userId, emotion);
   }
 
   /**
