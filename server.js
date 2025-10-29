@@ -596,6 +596,13 @@ app.post('/test-voice-clone', async (req, res) => {
       });
     }
 
+    // Debug: Log what iOS app sends
+    console.log(`🔍 TEST-VOICE-CLONE Request from iOS:`, {
+      userId: userId,
+      voiceId: voiceId || 'NOT SENT',
+      hasVoiceClone: voiceCloning.userVoiceEmbeddings.has(userId)
+    });
+
     // If voiceId is provided, inject it into the service
     if (voiceId) {
       // Temporarily store the voice clone if not exists
@@ -611,7 +618,11 @@ app.post('/test-voice-clone', async (req, res) => {
           language: 'de'
         });
         console.log(`📱 Restored voice clone from iOS app for user: ${userId} with Voice ID: ${voiceId}`);
+      } else {
+        console.log(`✅ Voice clone already exists for user: ${userId}`);
       }
+    } else {
+      console.log(`⚠️ NO Voice ID sent from iOS app for user: ${userId}`);
     }
 
     const result = await voiceCloning.testVoiceClone(userId);
