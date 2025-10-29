@@ -122,6 +122,11 @@ class QuizCharacterVoiceService {
 
       console.log(`Generating ${characterName} answer to: ${question}`);
 
+      // ALWAYS use fallback answers for now (no Claude API needed)
+      // This makes the system more stable and cost-effective
+      return this.getFallbackAnswer(characterName, question, userName);
+
+      /* DISABLED FOR NOW - Can be re-enabled later
       // Use Claude to generate character-specific answer
       if (ANTHROPIC_API_KEY) {
         const response = await axios.post(
@@ -158,6 +163,7 @@ class QuizCharacterVoiceService {
         // Fallback answers if no Claude API
         return this.getFallbackAnswer(characterName, question, userName);
       }
+      */
     } catch (error) {
       console.error('Error generating character answer:', error);
       return this.getFallbackAnswer(characterName, question, userName);
@@ -385,18 +391,30 @@ class QuizCharacterVoiceService {
     const fallbacks = {
       'DER FROSCHKÖNIG': [
         `Mon Dieu, was für eine Frage! In meinem Königreich würde man sowas niemals fragen! Aber gut, ${userName}, für dich mache ich eine royale Ausnahme...`,
-        `*Räuspert sich königlich* Also wirklich, das ist unter meiner Würde! Aber wenn du darauf bestehst...`,
-        `Sacré bleu! Das gemeine Volk und seine Fragen! Na schön, hör zu...`
+        `*Räuspert sich königlich* Also wirklich, ${userName}, das ist unter meiner Würde! Aber wenn du darauf bestehst, werde ich gnädig antworten...`,
+        `Sacré bleu! Das gemeine Volk und seine Fragen! Na schön, ${userName}, hör zu was der Prinz zu sagen hat...`,
+        `Oh là là, ${userName}! Diese Frage ist ja fast so gewöhnlich wie Leitungswasser! Aber ich bin heute großzügig...`,
+        `*Schnippt mit den Fingern* Diener! Bring mir mein goldenes Antwortbuch! Ach warte, ${userName} wartet... Also gut, ich improvisiere königlich!`,
+        `Bei meiner Krone! ${userName}, du wagst es, einem Prinzen solche Fragen zu stellen? Nun gut, ich vergebe dir...`,
+        `Très bien, sehr gut! Eine Frage würdig eines fast-Adeligen! ${userName}, ich ehre dich mit meiner Antwort...`
       ],
       'DER CASANOVA': [
         `Amore mio! Was für eine leidenschaftliche Frage! ${userName}, lass mich dir von Herzen antworten...`,
-        `Bellissima! Diese Frage ist wie ein Tango - heiß und verführerisch! Hier meine Antwort...`,
-        `Mamma mia! Du stellst Fragen wie Liebespfeile! Hier kommt meine romantische Antwort...`
+        `Bellissima! Diese Frage ist wie ein Tango - heiß und verführerisch! ${userName}, hier meine Antwort...`,
+        `Mamma mia! ${userName}, du stellst Fragen wie Liebespfeile! Hier kommt meine romantische Antwort...`,
+        `Ciao bella! ${userName}, diese Frage macht mein italienisches Herz schneller schlagen! Ascolta...`,
+        `Per l'amore! ${userName}, du bist ja neugierig wie eine venezianische Kurtisane! Ich antworte mit Leidenschaft...`,
+        `Dolce ${userName}! Diese Frage ist wie ein guter Wein - sie wird mit jedem Moment besser! Ecco...`,
+        `Fantastico! ${userName}, deine Frage ist wie Musik in meinen Ohren! Lass mich dir eine Serenade der Antwort singen...`
       ],
       'DIE FLEDERMAUS': [
         `*Flüstert aus den Schatten* Interessante Frage, ${userName}... Das Mondlicht hat mir die Antwort geflüstert...`,
-        `In der Dunkelheit der Nacht offenbart sich die Wahrheit... Höre meine mysteriöse Antwort...`,
-        `Die Schatten tanzen und erzählen mir Geheimnisse... Hier ist, was sie sagen...`
+        `In der Dunkelheit der Nacht offenbart sich die Wahrheit... ${userName}, höre meine mysteriöse Antwort...`,
+        `Die Schatten tanzen und erzählen mir Geheimnisse... ${userName}, hier ist, was sie über deine Frage sagen...`,
+        `*Breitet die Flügel aus* ${userName}, deine Frage hallt durch die Nacht... Die Sterne haben geantwortet...`,
+        `Wenn die Mitternacht schlägt, ${userName}, werden alle Geheimnisse enthüllt... So auch die Antwort auf deine Frage...`,
+        `*Gleitet lautlos näher* ${userName}... Die Dunkelheit birgt viele Antworten... Hier ist eine davon...`,
+        `Das Echo der Ewigkeit trägt deine Frage zu mir, ${userName}... Und ich antworte mit den Worten der Nacht...`
       ]
     };
 
