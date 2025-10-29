@@ -5,12 +5,16 @@ const cors = require('cors');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const axios = require('axios');
 const VoiceTarotService = require('./voice-tarot');
+const QuizCharacterVoiceService = require('./quiz-character-voices');
+const VoiceCloningService = require('./voice-cloning-service');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize Voice Tarot Service
+// Initialize Voice Services
 const voiceTarot = new VoiceTarotService();
+const quizCharacterVoice = new QuizCharacterVoiceService();
+const voiceCloning = new VoiceCloningService();
 
 // Increase payload size limit for base64 images
 app.use(cors());
@@ -438,6 +442,232 @@ app.get('/available-voices', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch available voices',
+      details: error.message
+    });
+  }
+});
+
+// ====== QUIZ CHARACTER VOICE ENDPOINTS ======
+
+// Generate quiz character response with voice
+app.post('/quiz-character-response', async (req, res) => {
+  try {
+    const { character, question, userName } = req.body;
+
+    if (!character || !question) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required parameters: character and question'
+      });
+    }
+
+    console.log(`\n🎭 Quiz Character Request:`, { character, question, userName });
+
+    const result = await quizCharacterVoice.generateQuizResponse(
+      character,
+      question,
+      userName || 'Spieler'
+    );
+
+    res.json(result);
+
+  } catch (error) {
+    console.error('Quiz character voice error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate character response',
+      details: error.message
+    });
+  }
+});
+
+// Get available quiz characters
+app.get('/quiz-characters', (req, res) => {
+  try {
+    const characters = quizCharacterVoice.getCharacters();
+    res.json({
+      success: true,
+      characters: characters
+    });
+  } catch (error) {
+    console.error('Error fetching characters:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch characters',
+      details: error.message
+    });
+  }
+});
+
+// Test all quiz characters (development endpoint)
+app.post('/test-quiz-characters', async (req, res) => {
+  try {
+    const { question } = req.body;
+    const testQuestion = question || "Was ist deine größte Red Flag bei anderen?";
+
+    console.log('\n🎭 Testing all quiz characters with:', testQuestion);
+
+    const results = await quizCharacterVoice.testAllCharacters(testQuestion);
+
+    res.json({
+      success: true,
+      question: testQuestion,
+      results: results
+    });
+
+  } catch (error) {
+    console.error('Test error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to test characters',
+      details: error.message
+    });
+  }
+});
+
+// ====== VOICE CLONING ENDPOINTS ======
+
+// Create voice clone from audio sample
+app.post('/create-voice-clone', async (req, res) => {
+  try {
+    const { audioBase64, userId } = req.body;
+
+    if (!audioBase64 || !userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required parameters: audioBase64 and userId'
+      });
+    }
+
+    console.log(`\n🎤 Voice Clone Request for user: ${userId}`);
+
+    const result = await voiceCloning.createVoiceClone(audioBase64, userId);
+    res.json(result);
+
+  } catch (error) {
+    console.error('Voice clone creation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create voice clone',
+      details: error.message
+    });
+  }
+});
+
+// Generate speech with cloned voice
+app.post('/generate-with-clone', async (req, res) => {
+  try {
+    const { text, userId, emotion } = req.body;
+
+    if (!text || !userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required parameters: text and userId'
+      });
+    }
+
+    const result = await voiceCloning.generateWithClonedVoice(
+      text,
+      userId,
+      emotion || 'neutral'
+    );
+
+    res.json(result);
+
+  } catch (error) {
+    console.error('Clone speech generation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate speech with cloned voice',
+      details: error.message
+    });
+  }
+});
+
+// Test voice clone
+app.post('/test-voice-clone', async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required parameter: userId'
+      });
+    }
+
+    const result = await voiceCloning.testVoiceClone(userId);
+    res.json(result);
+
+  } catch (error) {
+    console.error('Voice clone test error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to test voice clone',
+      details: error.message
+    });
+  }
+});
+
+// Get voice clone status
+app.get('/voice-clone-status/:userId', (req, res) => {
+  try {
+    const { userId } = req.params;
+    const status = voiceCloning.getVoiceCloneStatus(userId);
+    res.json(status);
+
+  } catch (error) {
+    console.error('Status check error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to check voice clone status',
+      details: error.message
+    });
+  }
+});
+
+// Delete voice clone
+app.delete('/voice-clone/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const result = await voiceCloning.deleteVoiceClone(userId);
+    res.json(result);
+
+  } catch (error) {
+    console.error('Delete voice clone error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete voice clone',
+      details: error.message
+    });
+  }
+});
+
+// Generate quiz answer with user's cloned voice
+app.post('/quiz-answer-with-clone', async (req, res) => {
+  try {
+    const { userId, question, answerText } = req.body;
+
+    if (!userId || !question || !answerText) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required parameters: userId, question, answerText'
+      });
+    }
+
+    const result = await voiceCloning.generateQuizAnswerWithClone(
+      userId,
+      question,
+      answerText
+    );
+
+    res.json(result);
+
+  } catch (error) {
+    console.error('Quiz answer generation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate quiz answer with clone',
       details: error.message
     });
   }
